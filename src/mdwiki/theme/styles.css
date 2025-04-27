@@ -1,0 +1,143 @@
+:root {
+  --color-dark-grey: #22292f;
+  --color-light-grey: #3d4852;
+  --color-lighter-grey: #8795a1;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: sans-serif;
+  color: var(--color-dark-grey);
+}
+
+header, main, article {
+  padding: 2rem 4rem 4rem;
+  max-width: 850px;
+}
+
+h1 {
+  margin: .25rem 0 1.5rem;
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+h2 {
+  margin: .5rem 0 1.2rem;
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+p {
+  text-align: justify;
+}
+
+li {
+  margin: .3rem 1rem;
+}
+
+em {
+  font-style: italic;
+}
+
+blockquote {
+  margin-left: 2rem;
+  font-style: italic;
+}
+
+blockquote::before,
+blockquote::after {
+  content: '"';
+}
+
+a {
+  text-decoration: underline;
+  color: var(--color-light-grey);
+}
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+th { font-weight: 600; }
+th, td {
+  border: 1px solid #ddd;
+  padding: 0.4rem 0.8rem;
+}
+
+pre {
+  white-space: normal;
+}
+
+code {
+  padding: 0 .25rem;
+  background-color: #f1f5f8;
+  white-space: pre;
+  font-family: monospace;
+  font-size: .875rem;
+  display: inline;
+}
+
+pre > code {
+  padding: 1rem;
+  border-radius: .25rem;
+  background-color: var(--color-dark-grey);
+  color: #fff;
+  overflow-y: auto;
+  display: block;
+}
+
+time {
+  margin-bottom: .25rem;
+  text-transform: uppercase;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--color-lighter-grey);
+  display: block;
+}
+
+/* header styles */
+
+header nav {
+  display: flex;
+}
+
+header nav a:hover { color: var(--color-dark-grey); }
+header nav a + a { margin-inline-start: 1.2rem;}
+header nav a {
+  text-decoration: none;
+  color: var(--color-lighter-grey);
+}
+
+/* main styles */
+
+main ol {
+  list-style: none;
+}
+
+main li {
+  margin-bottom: 1.5rem;
+}
+
+main a:hover { text-decoration: underline; }
+main a {
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--color-light-grey);
+  display: block;
+}
+
+/* article styles */ 
+
+article > * + * {
+  margin-top: 1.5rem;
+}

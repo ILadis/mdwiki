@@ -1,0 +1,16 @@
+site_name: ladis.cloud - mdwiki
+docs_dir: docs
+
+theme:
+  name: mdwiki
+
+plugins:
+  - mdwiki
+
+nav:
+  - GitHub: https://github.com/ILadis
+
+markdown_extensions:
+  - smarty
+  - sane_lists
+  - footnotes

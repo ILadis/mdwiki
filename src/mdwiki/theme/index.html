@@ -1,0 +1,15 @@
+{% extends "main.html" %}
+
+{% block content %}
+<main>
+  <ol>
+    {%- for feature in features %}
+    <li>
+      <time datetime="{{ feature.date }}">{{ feature.date.strftime('%B %d, %Y') }}</time>
+      <a href="{{ feature.url | url }}">{{ feature.title }}</a>
+      <p>{{ feature.summary }}</p>
+    </li>
+    {% endfor %}
+  </ol>
+</main>
+{% endblock %}

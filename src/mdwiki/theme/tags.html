@@ -1,0 +1,12 @@
+{% extends "main.html" %}
+
+{% block content %}
+<main>
+  <p>TAGS PAGE - WIP</p>
+  <dd>
+    {%- for tag in tags %}
+    <dt>#{{ tag }}</dt>
+    {% endfor %}
+  </dd>
+</main>
+{% endblock %}
