@@ -10,6 +10,8 @@ plugins:
 nav:
   - GitHub: https://github.com/ILadis
 
+# for available extensions see:
+# https://python-markdown.github.io/extensions/
 markdown_extensions:
   - smarty
   - sane_lists
