@@ -1,8 +1,10 @@
 
 import os
+import logging
 import pathlib, importlib
 
 def newfio(module, fn, mode=True):
+    logger = logging.getLogger('mkdocs.plugins.newfio')
     file = pathlib.Path(__file__)
     root = file.parents[1]
 
@@ -14,20 +16,22 @@ def newfio(module, fn, mode=True):
             if not root in path.parents:
                 return oldfn(path, *args, **kwargs)
 
-            anchor = str(path.relative_to(root))
+            package = path.relative_to(root)
 
             if not mode:
-                print(f"{oldfn}() from package: {anchor}, path is: {path}")
+                package = '.'.join(package.parts)
+                logger.debug('Called %s(..) from package: %s (path=%s)', oldfn.__name__, package, path)
 
-                file = importlib.resources.files(anchor)
+                file = importlib.resources.files(package)
                 return callback(file, *args, **kwargs)
 
-            name = os.path.basename(anchor)
-            anchor = os.path.dirname(anchor).replace('/', '.')
+            name = package.name
+            parent = package.parent
 
-            print(f"{oldfn}() from package: {anchor}, file is: {name}, path is: {path}")
+            package = '.'.join(parent.parts)
+            logger.debug('Called %s(..) from package: %s (path=%s, file=%s)', oldfn.__name__, package, path, name)
 
-            file = importlib.resources.files(anchor).joinpath(name)
+            file = importlib.resources.files(package).joinpath(name)
             return callback(file, *args, **kwargs)
 
         setattr(module, fn, io)
