@@ -1,3 +1,5 @@
+
+import logging
 import mkdocs.plugins
 
 from mkdocs.utils import meta
@@ -5,7 +7,7 @@ from mkdocs.structure.pages import Page
 
 class MdWikiPlugin(mkdocs.plugins.BasePlugin):
     def on_startup(self, command, dirty):
-        print('MdWikiPlugin was started')
+        self.logger = logging.getLogger('mkdocs.plugins.mdwiki')
 
     def get_features(self, files):
         features = list()
@@ -21,6 +23,7 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
                 url = file.url)
 
             features.append(feature)
+            self.logger.debug('Got featured page: "%s"', feature.get('title'))
 
         return features
 
@@ -34,6 +37,7 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
             for tag in data.get('tags', []):
                 tags.add(tag)
 
+        self.logger.debug('Got page tags: %s', str(tags))
         return tags
 
     def on_env(self, env, config, files):
