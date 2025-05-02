@@ -2,7 +2,7 @@
 import os, builtins
 import pathlib, importlib
 
-from mdwiki.ioutils import newfio
+from mdwiki.io import newfio
 
 @newfio(os, 'walk', mode=False)
 def walk(file, **kwargs):

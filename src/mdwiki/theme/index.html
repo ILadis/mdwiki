@@ -1,13 +1,17 @@
 {% extends "main.html" %}
 
+{% if request %}
+{% set tag = request.query.get('tag', none) %}
+{% endif %}
+
 {% block content %}
 <main>
   <ol>
-    {%- for feature in features %}
+    {%- for post in posts if not tag or tag in post.tags %}
     <li>
-      <time datetime="{{ feature.date }}">{{ feature.date.strftime('%B %d, %Y') }}</time>
-      <a href="{{ feature.url | url }}">{{ feature.title }}</a>
-      <p>{{ feature.summary }}</p>
+      <time datetime="{{ post.date }}">{{ post.date.strftime('%B %d, %Y') }}</time>
+      <a href="{{ post.url | url }}">{{ post.title }}</a>
+      <p>{{ post.summary }}</p>
     </li>
     {% endfor %}
   </ol>

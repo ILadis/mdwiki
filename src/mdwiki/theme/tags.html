@@ -5,7 +5,7 @@
   <p>TAGS PAGE - WIP</p>
   <dd>
     {%- for tag in tags %}
-    <dt>#{{ tag }}</dt>
+    <dt><a href="{{ 'index.html' | url }}?tag={{ tag }}">#{{ tag }}</a></dt>
     {% endfor %}
   </dd>
 </main>
