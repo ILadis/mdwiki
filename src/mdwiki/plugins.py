@@ -3,16 +3,39 @@ import logging
 import urllib.parse
 import mkdocs.plugins
 
+import mdwiki.http
+import mdwiki.api
+
 from mdwiki.utils import get_posts, get_tags
+
+# For developer guide in plugins see:
+# https://www.mkdocs.org/dev-guide/plugins/
 
 class MdWikiPlugin(mkdocs.plugins.BasePlugin):
     def on_startup(self, command, dirty):
         self.logger = logging.getLogger('mkdocs.plugins.mdwiki')
-        self.index = MdWikiDynamicTemplate('index.html')
+        self.index = mdwiki.http.HttpTemplate('index.html')
+
+        self.router = mdwiki.http.HttpRouter()
+        self.router.add_handler(self.index)
+
+        self.list_notes = mdwiki.api.ListNotes()
+        self.update_notes = mdwiki.api.UpdateNotes()
+
+        self.router.add_handler(mdwiki.api.Capabilities())
+        self.router.add_handler(self.list_notes)
+        self.router.add_handler(self.update_notes)
+
+        self.logger.info('Attached nextcloud notes api to server')
 
     def on_serve(self, server, config, builder):
-        self.index.attach_to(server)
-        self.logger.info('Attached dynamic template "%s" to server', str(self.index.name))
+        self.router.attach_to(server)
+        self.logger.info('Attached dynamic/http template "%s" to server', self.index.name)
+
+    def on_files(self, files, config):
+        self.list_notes.files = files
+        self.update_notes.files = files
+        self.logger.info('Updated files information for nextcloud notes api')
 
     def on_env(self, env, config, files):
         posts = get_posts(files)
@@ -31,36 +54,3 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
 
     def on_template_context(self, context, template_name, config):
         self.index.set_context(template_name, context)
-
-class MdWikiDynamicTemplate:
-    def __init__(self, name):
-        self.name = name
-
-    def set_template(self, name, template):
-        if self.name == name:
-            self.template = template
-
-    def set_context(self, name, context):
-        if self.name == name:
-            self.context = context
-
-    def attach_to(self, server):
-        delegate = server.get_app()
-
-        def handler(environ, start_response):
-            path = environ['PATH_INFO'][1:]
-            query = urllib.parse.parse_qsl(environ['QUERY_STRING'])
-
-            if self.name != path:
-                return delegate(environ, start_response)
-
-            start_response('200 OK', [('Content-Type', 'text/html')])
-
-            context = dict()
-            context.update(self.context)
-            context['request'] = dict(query = dict(query))
-
-            content = self.template.render(context)
-            return [content.encode('utf-8')]
-
-        server.set_app(handler)

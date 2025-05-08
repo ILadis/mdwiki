@@ -48,10 +48,8 @@ blockquote {
   font-style: italic;
 }
 
-blockquote::before,
-blockquote::after {
-  content: '"';
-}
+blockquote::before { content: '“'; }
+blockquote::after  { content: '„'; }
 
 a {
   text-decoration: underline;
@@ -134,6 +132,10 @@ main a {
   text-decoration: none;
   color: var(--color-light-grey);
   display: block;
+}
+
+main p {
+  margin-top: .25rem;
 }
 
 /* article styles */ 
