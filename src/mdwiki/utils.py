@@ -2,10 +2,11 @@
 import os.path
 import hashlib
 
+from datetime import datetime
 from mkdocs.utils import meta
 
 def get_note_id(file):
-    return int.from_bytes(hashlib.md5(file.src_uri.encode('utf-8')).digest()[0:4])
+    return int(os.stat(file.abs_src_path).st_ino)
 
 def get_note_etag(file):
     return str(hashlib.md5(file.content_string.encode('utf-8')).hexdigest())
@@ -36,9 +37,10 @@ def get_posts(files):
         _, data = meta.get_data(source)
 
         post = dict()
-        post['title'] = data.get('title')
-        post['summary'] = data.get('summary')
-        post['date'] = data.get('date')
+        # TODO use same source for fallbacks
+        post['title'] = data.get('title', 'Untitled')
+        post['summary'] = data.get('summary', '')
+        post['date'] = data.get('date', datetime.fromisoformat('1970-01-01'))
         post['tags'] = data.get('tags', [])
         post['url'] = file.url
 

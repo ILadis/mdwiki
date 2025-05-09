@@ -19,7 +19,9 @@
   </header>
   {% block content %}
   <article>
+    {% if 'date' in page.meta %}
     <time datetime="{{ page.meta.date }}">{{ page.meta.date.strftime('%B %d, %Y') }}</time>
+    {% endif %}
     {{ page.content }}
   </article>
   {% endblock %}

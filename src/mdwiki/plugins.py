@@ -21,10 +21,12 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
 
         self.list_notes = mdwiki.api.ListNotes()
         self.update_notes = mdwiki.api.UpdateNotes()
+        self.create_notes = mdwiki.api.CreateNotes()
 
         self.router.add_handler(mdwiki.api.Capabilities())
         self.router.add_handler(self.list_notes)
         self.router.add_handler(self.update_notes)
+        self.router.add_handler(self.create_notes)
 
         self.logger.info('Attached nextcloud notes api to server')
 
@@ -35,6 +37,7 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
     def on_files(self, files, config):
         self.list_notes.files = files
         self.update_notes.files = files
+        self.create_notes.config = config
         self.logger.info('Updated files information for nextcloud notes api')
 
     def on_env(self, env, config, files):
@@ -53,4 +56,5 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         self.index.set_template(template_name, template)
 
     def on_template_context(self, context, template_name, config):
+        # TODO add post object to context for documentation pages
         self.index.set_context(template_name, context)

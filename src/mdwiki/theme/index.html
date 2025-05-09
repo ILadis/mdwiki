@@ -1,7 +1,7 @@
 {% extends "main.html" %}
 
 {% if request %}
-{% set tag = request.query.get('tag', none) %}
+{% set tag = request.params.get('tag', none) %}
 {% endif %}
 
 {% block content %}

@@ -1,5 +1,5 @@
 
-import logging
+import logging, re
 import urllib.parse
 
 class HttpRouter:
@@ -34,9 +34,15 @@ class HttpRequest:
     def __init__(self, environ):
         self.method = environ['REQUEST_METHOD']
         self.path = environ['PATH_INFO']
-        self.query = parse_query(environ)
+        self.params = parse_query(environ)
         self.headers = parse_headers(environ)
         self.body = environ['wsgi.input']
+
+    def query(self, key, **kwargs):
+        return safe_get(self.params, key, **kwargs)
+
+    def header(self, key, **kwargs):
+        return safe_get(self.headers, key, **kwargs)
 
 class HttpResponse:
     def __init__(self):
@@ -50,15 +56,27 @@ def parse_query(environ):
 
 def parse_headers(environ):
     headers = dict()
+    extras = ['CONTENT_LENGTH']
 
     for key in environ:
-        if key.startswith('HTTP_'):
-            name = key[5:].lower().replace('_', '-')
+        if key.startswith('HTTP_') or key in extras:
+            name = key.replace('HTTP_', '', 1).lower().replace('_', '-')
             value = environ[key]
-
             headers[name] = value
 
     return headers
+
+def safe_get(values, key, *, pattern = None, default = None):
+    value = values.get(key, None)
+    if value is None:
+        if default is None:
+            raise Exception(f'"{key}" is required but not present')
+        return default
+
+    if pattern is not None and not re.fullmatch(pattern, value):
+        raise Exception(f'"{key}" does not match required pattern: {pattern}')
+
+    return value
 
 class HttpTemplate:
     def __init__(self, name):
