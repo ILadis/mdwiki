@@ -14,8 +14,15 @@ from mdwiki.utils import get_posts, get_tags
 class MdWikiPlugin(mkdocs.plugins.BasePlugin):
     def on_startup(self, command, dirty):
         self.logger = logging.getLogger('mkdocs.plugins.mdwiki')
-    
+        self.configured = False
+
     def on_config(self, config):
+        if self.configured:
+            return
+
+        # Only configure http handlers once ("on_config" event can be triggered multiple times)
+        self.configured = True
+
         self.index = mdwiki.http.HttpTemplate('index.html')
         self.list_notes = mdwiki.api.ListNotes(config)
         self.update_notes = mdwiki.api.UpdateNotes(config)

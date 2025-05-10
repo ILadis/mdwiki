@@ -9,7 +9,17 @@ def get_note_id(file):
     return int(os.stat(file.abs_src_path).st_ino)
 
 def get_note_etag(file):
-    return str(hashlib.md5(file.content_string.encode('utf-8')).hexdigest())
+    etag = hashlib.md5()
+
+    name = file.name.encode('utf-8')
+    if len(name) > 0:
+        etag.update(name)
+
+    content = file.content_string.encode('utf-8')
+    if len(content) > 0:
+        etag.update(content)
+
+    return str(etag.hexdigest())
 
 def get_note(file):
     noteid = get_note_id(file)
