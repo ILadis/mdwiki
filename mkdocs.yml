@@ -16,6 +16,6 @@ nav:
 # for available extensions see:
 # https://python-markdown.github.io/extensions/
 markdown_extensions:
+  - mdwiki_lists
   - smarty
-  - sane_lists
   - footnotes

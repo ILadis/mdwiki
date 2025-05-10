@@ -11,6 +11,9 @@ setup(
         ],
         'mkdocs.plugins': [
             'mdwiki = mdwiki.plugins:MdWikiPlugin',
+        ],
+        'markdown.extensions': [
+            'mdwiki_lists = mdwiki.extensions:MdWikiListExtension'
         ]
     },
     zip_safe=False
