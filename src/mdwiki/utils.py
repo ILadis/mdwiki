@@ -1,8 +1,8 @@
 
 import os.path
+import datetime
 import hashlib
 
-from datetime import datetime
 from mkdocs.utils import meta
 
 def get_note_id(file):
@@ -39,21 +39,35 @@ def get_note(file):
 
     return note
 
+def get_post(file):
+    source = file.content_string
+    _, data = meta.get_data(source)
+
+    title = data.get('title', file.name)
+    summary = data.get('summary', '')
+    date = data.get('date')
+    tags = data.get('tags')
+
+    if not isinstance(date, datetime.date):
+        timestamp = int(os.path.getmtime(file.abs_src_path))
+        date = datetime.date.fromtimestamp(timestamp)
+    if not isinstance(tags, list):
+        tags = list()
+
+    post = dict()
+    post['title'] = title
+    post['summary'] = summary
+    post['date'] = date
+    post['tags'] = tags
+    post['url'] = file.url
+
+    return post
+
 def get_posts(files):
     posts = list()
 
     for file in files.documentation_pages():
-        source = file.content_string
-        _, data = meta.get_data(source)
-
-        post = dict()
-        # TODO use same source for fallbacks
-        post['title'] = data.get('title', 'Untitled')
-        post['summary'] = data.get('summary', '')
-        post['date'] = data.get('date', datetime.fromisoformat('1970-01-01'))
-        post['tags'] = data.get('tags', [])
-        post['url'] = file.url
-
+        post = get_post(file)
         posts.append(post)
 
     return posts
@@ -62,10 +76,9 @@ def get_tags(files):
     tags = set()
 
     for file in files.documentation_pages():
-        source = file.content_string
-        _, data = meta.get_data(source)
+        post = get_post(file)
 
-        for tag in data.get('tags', []):
+        for tag in post['tags']:
             tags.add(tag)
 
     return tags

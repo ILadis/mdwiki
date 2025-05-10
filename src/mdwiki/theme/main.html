@@ -19,9 +19,8 @@
   </header>
   {% block content %}
   <article>
-    {% if 'date' in page.meta %}
-    <time datetime="{{ page.meta.date }}">{{ page.meta.date.strftime('%B %d, %Y') }}</time>
-    {% endif %}
+    {% set post = page | to_post %}
+    <time datetime="{{ post.date }}">{{ post.date.strftime('%B %d, %Y') }}</time>
     {{ page.content }}
   </article>
   {% endblock %}

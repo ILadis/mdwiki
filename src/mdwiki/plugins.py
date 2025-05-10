@@ -6,7 +6,7 @@ import mkdocs.plugins
 import mdwiki.http
 import mdwiki.api
 
-from mdwiki.utils import get_posts, get_tags
+from mdwiki.utils import get_posts, get_post, get_tags
 
 # For developer guide in plugins see:
 # https://www.mkdocs.org/dev-guide/plugins/
@@ -56,11 +56,12 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         env.globals['posts'] = posts
         env.globals['tags'] = tags
 
+        env.filters['to_post'] = lambda page: get_post(page.file)
+
         return env
 
     def on_pre_template(self, template, template_name, config):
         self.index.set_template(template_name, template)
 
     def on_template_context(self, context, template_name, config):
-        # TODO add post object to context for documentation pages
         self.index.set_context(template_name, context)
