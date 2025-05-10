@@ -14,30 +14,29 @@ from mdwiki.utils import get_posts, get_tags
 class MdWikiPlugin(mkdocs.plugins.BasePlugin):
     def on_startup(self, command, dirty):
         self.logger = logging.getLogger('mkdocs.plugins.mdwiki')
+    
+    def on_config(self, config):
         self.index = mdwiki.http.HttpTemplate('index.html')
+        self.list_notes = mdwiki.api.ListNotes(config)
+        self.update_notes = mdwiki.api.UpdateNotes(config)
+        self.create_notes = mdwiki.api.CreateNotes(config)
 
+    def on_serve(self, server, config, builder):
         self.router = mdwiki.http.HttpRouter()
-        self.router.add_handler(self.index)
+        self.router.attach_to(server)
 
-        self.list_notes = mdwiki.api.ListNotes()
-        self.update_notes = mdwiki.api.UpdateNotes()
-        self.create_notes = mdwiki.api.CreateNotes()
+        self.router.add_handler(self.index)
+        self.logger.info('Attached dynamic template "%s" to server', self.index.name)
 
         self.router.add_handler(mdwiki.api.Capabilities())
         self.router.add_handler(self.list_notes)
         self.router.add_handler(self.update_notes)
         self.router.add_handler(self.create_notes)
-
         self.logger.info('Attached nextcloud notes api to server')
-
-    def on_serve(self, server, config, builder):
-        self.router.attach_to(server)
-        self.logger.info('Attached dynamic/http template "%s" to server', self.index.name)
 
     def on_files(self, files, config):
         self.list_notes.files = files
         self.update_notes.files = files
-        self.create_notes.config = config
         self.logger.info('Updated files information for nextcloud notes api')
 
     def on_env(self, env, config, files):

@@ -1,6 +1,6 @@
 
 import logging, re
-import urllib.parse
+import pathlib, urllib.parse
 
 class HttpRouter:
     def __init__(self):
@@ -77,6 +77,12 @@ def safe_get(values, key, *, pattern = None, default = None):
         raise Exception(f'"{key}" does not match required pattern: {pattern}')
 
     return value
+
+def urlpath_matcher(url, path):
+    base = urllib.parse.urlsplit(url)
+    url = pathlib.Path(base.path).joinpath(path)
+
+    return re.compile(str(url))
 
 class HttpTemplate:
     def __init__(self, name):

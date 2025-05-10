@@ -1,12 +1,11 @@
 
-import os, re
-import pathlib
+import os, pathlib
 import json
 
 from mkdocs.structure.files import File
 
 from mdwiki.utils import get_note, get_note_id
-from mdwiki.http import safe_get
+from mdwiki.http import safe_get, urlpath_matcher
 
 # For API specs see:
 # https://github.com/nextcloud/notes/blob/main/docs/api/v1.md
@@ -40,9 +39,9 @@ class Capabilities:
         return True
 
 class ListNotes:
-    def __init__(self, files = None):
+    def __init__(self, config, files = None):
         self.methods = ['GET']
-        self.path = re.compile('/index.php/apps/notes/api/v1/notes')
+        self.path = urlpath_matcher(config.site_url or '/', 'index.php/apps/notes/api/v1/notes')
         self.files = files
 
     def __call__(self, request, response):
@@ -81,9 +80,9 @@ class ListNotes:
         return True
 
 class UpdateNotes:
-    def __init__(self, files = None):
+    def __init__(self, config, files = None):
         self.methods = ['GET', 'PUT', 'DELETE']
-        self.path = re.compile('/index.php/apps/notes/api/v1/notes/([0-9]+)')
+        self.path = urlpath_matcher(config.site_url or '/', 'index.php/apps/notes/api/v1/notes/([0-9]+)')
         self.files = files
 
     def __call__(self, request, response):
@@ -147,9 +146,9 @@ class UpdateNotes:
         return True
 
 class CreateNotes:
-    def __init__(self, config = None):
+    def __init__(self, config):
         self.methods = ['POST']
-        self.path = re.compile('/index.php/apps/notes/api/v1/notes')
+        self.path = urlpath_matcher(config.site_url or '/', 'index.php/apps/notes/api/v1/notes')
         self.config = config
 
     def __call__(self, request, response):
