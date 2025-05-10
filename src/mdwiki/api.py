@@ -122,6 +122,7 @@ class UpdateNotes:
             if not newpath.is_file():
                 path.rename(newpath)
 
+            file.name = title
             file.content_string = content
             file.abs_src_path = str(newpath)
 
