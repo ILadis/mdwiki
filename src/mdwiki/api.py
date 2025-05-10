@@ -109,7 +109,7 @@ class UpdateNotes:
             length = request.header('content-length', pattern = '[0-9]+')
             note = json.loads(request.body.read(int(length)))
 
-            title = safe_get(note, 'title', pattern = '[a-zA-Z0-9_-]*')
+            title = safe_get(note, 'title', pattern = '[a-zA-Z0-9 _-]*')
             content = safe_get(note, 'content')
 
             if title == '':
@@ -161,7 +161,7 @@ class CreateNotes:
         length = request.header('content-length', pattern = '[0-9]+')
         note = json.loads(request.body.read(int(length)))
 
-        title = safe_get(note, 'title', pattern = '[a-zA-Z0-9_-]*')
+        title = safe_get(note, 'title', pattern = '[a-zA-Z0-9 _-]*')
         content = safe_get(note, 'content')
         category = safe_get(note, 'category', default = '')
 

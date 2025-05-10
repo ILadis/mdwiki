@@ -14,6 +14,10 @@ class HttpRouter:
         delegate = server.get_app()
 
         def handler(environ, start_response):
+            # Wait until the ongoing rebuild (if any) finishes
+            with server._epoch_cond:
+                server._epoch_cond.wait_for(lambda: server._visible_epoch == server._wanted_epoch)
+
             request = HttpRequest(environ)
             response = HttpResponse()
 
