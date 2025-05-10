@@ -11,8 +11,8 @@ from mdwiki.http import safe_get, urlpath_matcher
 # https://github.com/nextcloud/notes/blob/main/docs/api/v1.md
 
 class Capabilities:
-    def __init__(self):
-        self.path = '/ocs/v2.php/cloud/capabilities'
+    def __init__(self, config):
+        self.path = urlpath_matcher(config.site_url or '/', 'ocs/v2.php/cloud/capabilities')
         self.capabilities = '''
             {
                 "ocs": {
@@ -29,7 +29,8 @@ class Capabilities:
             '''
 
     def __call__(self, request, response):
-        if request.method != 'GET' or request.path != self.path:
+        path = self.path.fullmatch(request.path)
+        if not path or request.method != 'GET':
             return False
 
         response.status = '200 OK'

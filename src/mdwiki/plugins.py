@@ -28,7 +28,7 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         self.router.add_handler(self.index)
         self.logger.info('Attached dynamic template "%s" to server', self.index.name)
 
-        self.router.add_handler(mdwiki.api.Capabilities())
+        self.router.add_handler(mdwiki.api.Capabilities(config))
         self.router.add_handler(self.list_notes)
         self.router.add_handler(self.update_notes)
         self.router.add_handler(self.create_notes)
