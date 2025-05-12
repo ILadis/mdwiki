@@ -8,7 +8,7 @@ class TabLengthProcessor(markdown.blockprocessors.BlockProcessor):
         self.tab_length = 2
 
 class OListProcessor(markdown.blockprocessors.OListProcessor, TabLengthProcessor):
-     def __init__(self, parser):
+    def __init__(self, parser):
         super(OListProcessor, self).__init__(parser)
 
 class UListProcessor(markdown.blockprocessors.UListProcessor, TabLengthProcessor):

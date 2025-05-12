@@ -1,13 +1,14 @@
 {% extends "main.html" %}
 
 {% if request %}
-{% set tag = request.params.get('tag', none) %}
+{% set tag = request.params.get('tag') %}
 {% endif %}
 
 {% block content %}
 <main>
   <ol>
-    {%- for post in posts if not tag or tag in post.tags %}
+    {%- set sorted = posts | sort(attribute = 'date', reverse = true) %}
+    {%- for post in sorted if not tag or tag in post.tags %}
     <li>
       <time datetime="{{ post.date }}">{{ post.date.strftime('%B %d, %Y') }}</time>
       <a href="{{ post.url | url }}">{{ post.title }}</a>

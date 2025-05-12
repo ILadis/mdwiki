@@ -89,12 +89,13 @@ def urlpath_matcher(url, path):
     return re.compile(str(url))
 
 class HttpTemplate:
-    def __init__(self, name):
+    def __init__(self, config, name):
         self.name = name
-        self.path = '/' + name
+        self.path = urlpath_matcher(config.site_url or '/', name)
 
     def __call__(self, request, response):
-        if request.method != 'GET' or request.path != self.path:
+        path = self.path.fullmatch(request.path)
+        if not path or request.method != 'GET':
             return False
 
         context = dict(self.context)

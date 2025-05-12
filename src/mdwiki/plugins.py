@@ -23,7 +23,7 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         # Only configure http handlers once ("on_config" event can be triggered multiple times)
         self.configured = True
 
-        self.index = mdwiki.http.HttpTemplate('index.html')
+        self.index = mdwiki.http.HttpTemplate(config, 'index.html')
         self.list_notes = mdwiki.api.ListNotes(config)
         self.update_notes = mdwiki.api.UpdateNotes(config)
         self.create_notes = mdwiki.api.CreateNotes(config)
