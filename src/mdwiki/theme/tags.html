@@ -2,11 +2,12 @@
 
 {% block content %}
 <main>
-  <p>TAGS PAGE - WIP</p>
-  <dd>
-    {%- for tag in tags %}
-    <dt><a href="{{ 'index.html' | url }}?tag={{ tag }}">#{{ tag }}</a></dt>
+  <h2>Tags</h2>
+  <dl>
+    {%- set sorted = tags | sort %}
+    {%- for tag in sorted %}
+    <dt><a href="{{ 'index.html' | url }}?tag={{ tag }}">{{ tag }}</a></dt>
     {% endfor %}
-  </dd>
+  </dl>
 </main>
 {% endblock %}

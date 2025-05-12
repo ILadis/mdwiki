@@ -20,6 +20,7 @@
   {% block content %}
   <article>
     {% set post = page | to_post %}
+    <h1>{{ post.title }}</h1>
     <time datetime="{{ post.date }}">{{ post.date.strftime('%B %d, %Y') }}</time>
     {{ page.content }}
   </article>

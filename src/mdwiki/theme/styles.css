@@ -14,8 +14,13 @@ body {
   color: var(--color-dark-grey);
 }
 
-header, main, article {
+header {
   padding: 2rem 4rem 4rem;
+  max-width: 850px;
+}
+
+main, article {
+  padding: 0 4rem 4rem;
   max-width: 850px;
 }
 
@@ -122,7 +127,7 @@ main ol {
 }
 
 main li {
-  margin-bottom: 1.5rem;
+  margin: .3rem 0 1.5rem;
 }
 
 main a:hover { text-decoration: underline; }
@@ -136,9 +141,29 @@ main a {
 
 main p {
   margin-top: .25rem;
+  font-weight: 300;
+  text-align: left;
+}
+
+main dt::before { content: '#'; }
+main dt {
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+main dt + dt {
+  margin-left: .8rem;
+}
+
+main dt a {
+  display: inline;
 }
 
 /* article styles */ 
+
+article h1 + time {
+  margin-top: -.8rem;
+}
 
 article > * + * {
   margin-top: 1.5rem;

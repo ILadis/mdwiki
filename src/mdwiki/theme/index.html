@@ -6,6 +6,7 @@
 
 {% block content %}
 <main>
+  <h2>Home</h2>
   <ol>
     {%- set sorted = posts | sort(attribute = 'date', reverse = true) %}
     {%- for post in sorted if not tag or tag in post.tags %}
