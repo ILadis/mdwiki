@@ -13,7 +13,7 @@ setup(
             'mdwiki = mdwiki.plugins:MdWikiPlugin',
         ],
         'markdown.extensions': [
-            'mdwiki_lists = mdwiki.extensions:MdWikiListExtension'
+            'mdwiki = mdwiki.extensions:MdWikiExtension'
         ]
     },
     zip_safe=False

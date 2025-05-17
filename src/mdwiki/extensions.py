@@ -1,5 +1,8 @@
 
+import re
+
 import markdown.extensions
+import markdown.postprocessors
 import markdown.blockprocessors
 
 class TabLengthProcessor(markdown.blockprocessors.BlockProcessor):
@@ -67,8 +70,20 @@ class IndentProcessor(markdown.blockprocessors.ListIndentProcessor, TabLengthPro
      def __init__(self, parser):
         super().__init__(parser)
 
-class MdWikiListExtension(markdown.extensions.Extension):
+class ChecklistPostprocessor(markdown.postprocessors.Postprocessor):
+    RE = re.compile(r'^<li>\[([ Xx])\]', re.MULTILINE)
+
+    def run(self, html):
+        return re.sub(self.RE, self.convert, html)
+
+    def convert(self, match):
+        state = match.group(1)
+        checked = ' checked' if state != ' ' else ''
+        return '<li><input type="checkbox" disabled%s>' % checked
+
+class MdWikiExtension(markdown.extensions.Extension):
     def extendMarkdown(self, md):
         md.parser.blockprocessors.register(OListProcessor(md.parser), 'olist', 41)
         md.parser.blockprocessors.register(UListProcessor(md.parser), 'ulist', 31)
         md.parser.blockprocessors.register(IndentProcessor(md.parser), 'indent', 91)
+        md.postprocessors.register(ChecklistPostprocessor(), 'checklist', 51)
