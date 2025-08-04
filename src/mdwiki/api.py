@@ -40,7 +40,7 @@ class Capabilities:
         return True
 
 class ListNotes:
-    def __init__(self, config, files = None):
+    def __init__(self, config, files=None):
         self.methods = ['GET']
         self.path = urlpath_matcher(config.site_url or '/', 'index.php/apps/notes/api/v1/notes')
         self.files = files
@@ -81,7 +81,7 @@ class ListNotes:
         return True
 
 class UpdateNotes:
-    def __init__(self, config, files = None):
+    def __init__(self, config, files=None):
         self.methods = ['GET', 'PUT', 'DELETE']
         self.path = urlpath_matcher(config.site_url or '/', 'index.php/apps/notes/api/v1/notes/([0-9]+)')
         self.files = files

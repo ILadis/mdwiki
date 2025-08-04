@@ -70,7 +70,7 @@ def parse_headers(environ):
 
     return headers
 
-def safe_get(values, key, *, pattern = None, default = None):
+def safe_get(values, key, *, pattern=None, default=None):
     value = values.get(key, None)
     if value is None:
         if default is None:
