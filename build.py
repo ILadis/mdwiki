@@ -1,6 +1,8 @@
-import os, os.path
+#!/usr/bin/python3
+
 import urllib.request
-import glob, zipapp, hashlib, zipimport
+import zipapp, zipimport
+import os, pathlib, hashlib
 
 def main():
     clean(['./pip.pyz', './mkdocs.pyz', './vendor'])
@@ -8,34 +10,52 @@ def main():
 
     pip = get_pip()
 
-    pip(['install', 'mkdocs', '--prefix', './vendor'])
-    pip(['install', './src', '--prefix', './vendor'])
+    flags = ['--prefix', './vendor', '--disable-pip-version-check']
+    pip(['install', 'mkdocs'] + flags)
+    pip(['install', './src'] + flags)
 
-    zipapp.create_archive('./vendor/lib/python3.13/site-packages/', target='./mkdocs.pyz', main='mdwiki.main:run')
+    prefix = get_pip_prefix('./vendor')
+    zipapp.create_archive(prefix, target='./mkdocs.pyz', main='mdwiki.main:run')
 
 def get_pip(version='25.1.1', hash='3a4f097c346f67adde38ceb430f4872d1e12d729'):
-    pipurl = f"https://bootstrap.pypa.io/pip/zipapp/pip-{version}.pyz"
-    pipfile = './pip.pyz'
+    url = f"https://bootstrap.pypa.io/pip/zipapp/pip-{version}.pyz"
+    target = pathlib.Path('./pip.pyz')
 
-    if not os.path.isfile(pipfile):
-        urllib.request.urlretrieve(pipurl, pipfile)
+    if not target.exists():
+        urllib.request.urlretrieve(url, target)
 
-    with open(pipfile, 'rb') as file:
-        piphash = hashlib.file_digest(file, 'sha1').hexdigest()
-        if hash != piphash:
-            raise ImportError()
+    with target.open(mode='rb') as file:
+        h = hashlib.file_digest(file, 'sha1').hexdigest()
+        if h != hash:
+            raise ImportError(name='pip')
 
-    importer = zipimport.zipimporter(pipfile)
+    importer = zipimport.zipimporter(os.fspath(target))
     module = importer.load_module('pip')
 
     return module.main
 
-# FIXME: does not work for directories
+def get_pip_prefix(prefix):
+    files = pathlib.Path(prefix).glob('./lib/python*/site-packages')
+    file = next(files, False)
+
+    if file is False:
+        raise FileNotFoundError()
+    return file
+
 def clean(files):
     for file in files:
-        for name in glob.glob(file):
-            print(f"Removing file: {name}")
-            os.remove(name)
+        paths = pathlib.Path('.').glob(file)
+        for path in paths:
+            remove(path)
+
+def remove(path):
+    for root, dirs, files in path.walk(top_down=False):
+        for name in files:
+            file = root.joinpath(name)
+            file.unlink()
+        for name in dirs:
+            file = root.joinpath(name)
+            file.rmdir()
 
 if __name__ == '__main__':
     main()
