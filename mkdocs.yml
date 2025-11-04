@@ -8,7 +8,10 @@ theme:
   name: mdwiki
 
 plugins:
-  - mdwiki
+  - mdwiki:
+      log_level: info
+      log_format: >-
+        %(asctime)s [%(levelname)9s] --- %(name)s: %(message)s
 
 nav:
   - GitHub: https://github.com/ILadis

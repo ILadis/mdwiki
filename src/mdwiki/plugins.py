@@ -1,22 +1,30 @@
 
-import logging
+import sys, logging
 import urllib.parse
 import mkdocs.plugins
+import mkdocs.config.config_options
 
 import mdwiki.http
 import mdwiki.api
 
-from mdwiki.utils import get_posts, get_post, get_tags
+from mdwiki.utils import setup_logging, get_posts, get_post, get_tags
 
 # For developer guide in plugins see:
 # https://www.mkdocs.org/dev-guide/plugins/
 
 class MdWikiPlugin(mkdocs.plugins.BasePlugin):
+    config_scheme = (
+        ('log_level' , mkdocs.config.config_options.Type(str, default='info')),
+        ('log_format', mkdocs.config.config_options.Type(str, default='%(levelname)8s-  %(message)s')),
+    )
+
     def on_startup(self, command, dirty):
         self.logger = logging.getLogger('mkdocs.plugins.mdwiki')
         self.configured = False
 
     def on_config(self, config):
+        setup_logging(sys.stdout, self.config['log_level'], self.config['log_format'])
+
         if self.configured:
             return
 

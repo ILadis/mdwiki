@@ -1,7 +1,9 @@
 
-import os.path
+import os, os.path
+import logging
 import datetime
 import hashlib
+import types
 
 from mkdocs.utils import meta
 
@@ -82,3 +84,31 @@ def get_tags(files):
             tags.add(tag)
 
     return tags
+
+def setup_logging(stream, level, pattern):
+    levels = {
+        'debug': logging.DEBUG,
+        'info':  logging.INFO,
+        'warn':  logging.WARNING,
+        'error': logging.ERROR
+    }
+
+    # stips timestamps from live reload server logs
+    def formatMessage(self, record):
+        if record.name == 'mkdocs.livereload':
+            record.message = record.msg[11:]
+        return self._style.format(record)
+
+    formatter = logging.Formatter(pattern)
+    formatter.formatMessage = types.MethodType(formatMessage, formatter)
+
+    logger = logging.getLogger('mkdocs')
+    logger.setLevel(levels[level])
+
+    for handler in logger.handlers:
+        if handler.name == 'MkDocsStreamHandler':
+            handler.setStream(stream)
+            handler.setFormatter(formatter)
+            return True
+
+    return False
