@@ -105,10 +105,12 @@ def setup_logging(stream, level, pattern):
     logger = logging.getLogger('mkdocs')
     logger.setLevel(levels[level])
 
-    for handler in logger.handlers:
-        if handler.name == 'MkDocsStreamHandler':
-            handler.setStream(stream)
-            handler.setFormatter(formatter)
-            return True
+    handler = logging.getHandlerByName('MkDocsStreamHandler')
 
-    return False
+    if handler is None:
+        handler = logging.StreamHandler()
+        handler.name = 'MkDocsStreamHandler'
+        logger.addHandler(handler)
+
+    handler.setStream(stream)
+    handler.setFormatter(formatter)

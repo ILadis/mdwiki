@@ -2,8 +2,8 @@
 import sys
 
 def run():
-    from mkdocs.__main__ import cli
-    sys.exit(cli())
+    from mkdocs.commands import serve
+    sys.exit(serve.serve())
 
 if __name__ == '__main__':
     run()
