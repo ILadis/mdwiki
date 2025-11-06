@@ -1,13 +1,14 @@
 
-import os, pathlib
+import os, re
+import pathlib
 import json
 
 from mkdocs.structure.files import File
 
-from mdwiki.utils import get_note, get_note_id
+from mdwiki.utils import get_note, get_file_id
 from mdwiki.http import safe_get, urlpath_matcher
 
-# For API specs see:
+# for API specs see:
 # https://github.com/nextcloud/notes/blob/main/docs/api/v1.md
 
 class Capabilities:
@@ -95,7 +96,7 @@ class UpdateNotes:
         pathid = int(path.group(1))
 
         for page in self.files.documentation_pages():
-            noteid = get_note_id(page)
+            noteid = get_file_id(page)
 
             if noteid == pathid:
                 file = page
@@ -186,5 +187,61 @@ class CreateNotes:
             response.status = '200 OK'
             response.headers['Content-Type'] = 'application/json'
             response.body = json.dumps(note)
+
+        return True
+
+class TickCheckbox:
+    def __init__(self, config, files=None):
+        self.methods = ['POST']
+        self.path = urlpath_matcher(config.site_url or '/', 'index.php/apps/notes/api/v1/notes/([0-9]+)/checkboxes/([0-9]+)/(un)?tick')
+        self.checkbox = re.compile(r'^[ ]*[*+-][ ]+\[([ Xx])\]', re.M)
+        self.files = files
+
+    def __call__(self, request, response):
+        path = self.path.fullmatch(request.path)
+        if not path or request.method not in self.methods:
+            return False
+
+        file = None
+        match = None
+
+        pathid = int(path.group(1))
+        boxnum = int(path.group(2))
+        untick = bool(path.group(3))
+
+        for page in self.files.documentation_pages():
+            noteid = get_file_id(page)
+
+            if noteid != pathid:
+                continue
+
+            file = page
+            content = file.content_string
+
+            while boxnum > 0:
+                offset = 0 if match is None else match.end(1)
+                match  = self.checkbox.search(content, offset)
+                boxnum = boxnum - 1 if match else 0
+            break
+
+        if not file:
+            response.status = '404 Not Found'
+            response.body = ''
+
+        elif not match:
+            response.status = '400 Bad Request'
+            response.body = ''
+
+        else:
+            start = file.content_string[:match.start(1)]
+            end   = file.content_string[match.end(1):]
+
+            content = start + (' ' if untick else 'x') + end
+
+            path = pathlib.Path(file.abs_src_path)
+            path.write_text(content)
+
+            response.status = '200 OK'
+            response.body = ''
 
         return True

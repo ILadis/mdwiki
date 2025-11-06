@@ -35,6 +35,7 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         self.list_notes = mdwiki.api.ListNotes(config)
         self.update_notes = mdwiki.api.UpdateNotes(config)
         self.create_notes = mdwiki.api.CreateNotes(config)
+        self.tick_checkbox = mdwiki.api.TickCheckbox(config)
 
     def on_serve(self, server, config, builder):
         self.router = mdwiki.http.HttpRouter()
@@ -47,11 +48,13 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         self.router.add_handler(self.list_notes)
         self.router.add_handler(self.update_notes)
         self.router.add_handler(self.create_notes)
+        self.router.add_handler(self.tick_checkbox)
         self.logger.info('Attached nextcloud notes api to server')
 
     def on_files(self, files, config):
         self.list_notes.files = files
         self.update_notes.files = files
+        self.tick_checkbox.files = files
         self.logger.info('Updated files information for nextcloud notes api')
 
     def on_env(self, env, config, files):

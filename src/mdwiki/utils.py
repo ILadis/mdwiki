@@ -7,10 +7,10 @@ import types
 
 from mkdocs.utils import meta
 
-def get_note_id(file):
+def get_file_id(file):
     return int(os.stat(file.abs_src_path).st_ino)
 
-def get_note_etag(file):
+def get_file_etag(file):
     etag = hashlib.md5()
 
     name = file.name.encode('utf-8')
@@ -24,13 +24,12 @@ def get_note_etag(file):
     return str(etag.hexdigest())
 
 def get_note(file):
-    noteid = get_note_id(file)
-    etag = get_note_etag(file)
+    fid = get_file_id(file)
+    etag = get_file_etag(file)
     modified = int(os.path.getmtime(file.abs_src_path))
 
-    # TODO consider using typed dicts
     note = dict()
-    note['id'] = noteid
+    note['id'] = fid
     note['title'] = file.name
     note['content'] = file.content_string
     note['category'] = ''
@@ -45,6 +44,7 @@ def get_post(file):
     source = file.content_string
     _, data = meta.get_data(source)
 
+    fid = get_file_id(file)
     title = data.get('title', file.name)
     summary = data.get('summary', '')
     date = data.get('date')
@@ -57,6 +57,7 @@ def get_post(file):
         tags = list()
 
     post = dict()
+    post['id'] = fid
     post['title'] = title
     post['summary'] = summary
     post['date'] = date

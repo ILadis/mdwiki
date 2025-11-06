@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{{ 'styles.css' | url }}">
+  <script type="text/javascript" src="{{ 'script.js' | url }}"></script>
   <title>{{ config.site_name }}</title>
 </head>
 <body>
@@ -17,9 +18,8 @@
       {% endfor %}
     </nav>
   </header>
-  {% block content %}
-  <article>
-    {% set post = page | to_post %}
+  {% block content %} {% set post = page | to_post %}
+  <article id="{{ post.id }}">
     <h1>{{ post.title }}</h1>
     <time datetime="{{ post.date }}">{{ post.date.strftime('%B %d, %Y') }}</time>
     {{ page.content }}

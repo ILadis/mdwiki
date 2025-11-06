@@ -24,6 +24,7 @@ class HttpRouter:
             for handler in self.handlers :
                 if handler(request, response) is True:
                     self.logger.info('Handled request: %s %s -> %s', request.method, request.path, response.status)
+                    self.logger.debug('Request params were: %s', request.params)
 
                     headers = list(response.headers.items())
                     body = [response.body.encode('utf-8')]
