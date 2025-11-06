@@ -1,21 +1,41 @@
 #!/usr/bin/python3
 
+import argparse
+import unittest
 import urllib.request
 import zipapp, zipimport
 import os, pathlib, hashlib
 
 def main():
-    clean(['./pip.pyz', './mkdocs.pyz', './vendor'])
-    clean(['./src/build', './src/*.egg-info'])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('action', choices=['build', 'test'])
+    parser.add_argument('-c', '--clean', action='store_true')
+
+    args = parser.parse_args()
+    actions = { 'test': test, 'build': build }
+
+    actions[args.action](args)
+
+def build(args):
+    clean(['./mkdocs.pyz', './src/build', './src/*.egg-info'])
+    clean(['./vendor']  if args.clean else [])
 
     pip = get_pip()
 
     flags = ['--prefix', './vendor', '--disable-pip-version-check']
-    pip(['install', 'mkdocs'] + flags)
-    pip(['install', './src'] + flags)
+    pkgs  = ['mkdocs', './src'] if args.clean else ['./src']
+
+    pip(['install'] + pkgs + flags)
 
     prefix = get_pip_prefix('./vendor')
     zipapp.create_archive(prefix, target='./mkdocs.pyz', main='mdwiki.main:run')
+
+def test(args):
+    loader = unittest.TestLoader()
+    tests = loader.discover('./test', pattern='*_test.py')
+
+    runner = unittest.runner.TextTestRunner()
+    runner.run(tests)
 
 def get_pip(version='25.1.1', hash='3a4f097c346f67adde38ceb430f4872d1e12d729'):
     url = f"https://bootstrap.pypa.io/pip/zipapp/pip-{version}.pyz"
