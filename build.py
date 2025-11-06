@@ -32,6 +32,8 @@ def build(args):
 
 def test(args):
     loader = unittest.TestLoader()
+    loader.sortTestMethodsUsing = lambda test, other: +1 if test > other else -1
+
     tests = loader.discover('./test', pattern='*_test.py')
 
     runner = unittest.runner.TextTestRunner()

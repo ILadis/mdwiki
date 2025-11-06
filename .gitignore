@@ -1,5 +1,6 @@
 docs/
 vendor/
 build/
+__pycache__/
 *.egg-info
 *.pyz
