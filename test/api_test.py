@@ -1,88 +1,63 @@
 
 import unittest
-import subprocess
-import urllib, json, time
+import json
+
+from utils import MdWikiInstance
 
 class NotesApiTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.noteid = 0
-        cls.baseurl = 'http://localhost:8088/mdwiki'
-        cls.process = subprocess.Popen(['python', './mkdocs.pyz'])
-
-        # TODO read process stdout and wait for 'Serving on...' line
-        time.sleep(3)
+        MdWikiInstance.start()
+        NotesApiTest.noteid = 0
 
     @classmethod
     def tearDownClass(cls):
-        cls.process.terminate()
-        cls.process.wait()
+        MdWikiInstance.stop()
 
-    def test_1_creation_of_new_note(self):
-        # arrange
-        request = urllib.request.Request(method='POST',
-            url=f'{self.baseurl}/index.php/apps/notes/api/v1/notes',
-            data=b'''
-                {
-                  "title": "New note",
-                  "content": "This is a new note, how exciting!"
-                }''')
-
+    def test_1_creation_of_note(self):
         # act
-        try:
-            response = urllib.request.urlopen(request)
-        except urllib.error.HTTPError as error:
-            response = error
-        body = json.loads(response.read() or '{ }')
+        api = MdWikiInstance.call_api('POST', 'index.php/apps/notes/api/v1/notes', '''
+            {
+                "title": "New note",
+                "content": "This is a new note, how exciting!"
+            }''')
+
+        note = json.loads(api.read() or '{ }')
 
         # assert
-        self.assertEqual(200, response.status)
-        self.assertTrue(0 < body['id'])
-        self.assertEqual('New note', body['title'])
-        self.assertEqual('This is a new note, how exciting!', body['content'])
-        self.assertEqual('a1b84777521205ae8284413c0d6df4fa', body['etag'])
+        self.assertEqual(200, api.status)
+        self.assertTrue(0 < note['id'])
+        self.assertEqual('New note', note['title'])
+        self.assertEqual('This is a new note, how exciting!', note['content'])
+        self.assertEqual('a1b84777521205ae8284413c0d6df4fa', note['etag'])
 
         # assign
-        NotesApiTest.noteid = body['id']
+        NotesApiTest.noteid = note['id']
 
-    def test_2_update_of_new_note(self):
-        # arrange
-        request = urllib.request.Request(method='PUT',
-            url=f'{self.baseurl}/index.php/apps/notes/api/v1/notes/{self.noteid}',
-            data=b'''
-                {
-                  "title": "New note",
-                  "content": "New note ... now with updated contents!"
-                }''')
-
+    def test_2_update_of_note(self):
         # act
-        try:
-            response = urllib.request.urlopen(request)
-        except urllib.error.HTTPError as error:
-            response = error
-        body = json.loads(response.read() or '{ }')
+        api = MdWikiInstance.call_api('PUT', f'index.php/apps/notes/api/v1/notes/{self.noteid}', '''
+            {
+                "title": "New note",
+                "content": "New note ... now with updated contents!"
+            }''')
+
+        note = json.loads(api.read() or '{ }')
 
         # assert
-        self.assertEqual(200, response.status)
-        self.assertEqual(self.noteid, body['id'])
-        self.assertEqual('New note', body['title'])
-        self.assertEqual('New note ... now with updated contents!', body['content'])
-        self.assertEqual('7f65a348b4e57c2d0e0d081a42fc026b', body['etag'])
+        self.assertEqual(200, api.status)
+        self.assertEqual(self.noteid, note['id'])
+        self.assertEqual('New note', note['title'])
+        self.assertEqual('New note ... now with updated contents!', note['content'])
+        self.assertEqual('7f65a348b4e57c2d0e0d081a42fc026b', note['etag'])
 
-    def test_3_deletion_of_new_note(self):
+    def test_3_deletion_of_note(self):
         # arrange
-        request = urllib.request.Request(method='DELETE',
-            url=f'{self.baseurl}/index.php/apps/notes/api/v1/notes/{self.noteid}')
-
-        # act
-        try:
-            response = urllib.request.urlopen(request)
-        except urllib.error.HTTPError as error:
-            response = error
+        api = MdWikiInstance.call_api('DELETE', f'index.php/apps/notes/api/v1/notes/{self.noteid}')
 
         # assert
-        self.assertEqual(200, response.status)
+        self.assertEqual(200, api.status)
 
 if __name__ == '__main__':
     unittest.main()

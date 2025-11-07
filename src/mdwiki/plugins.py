@@ -54,6 +54,7 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
     def on_files(self, files, config):
         self.list_notes.files = files
         self.update_notes.files = files
+        self.create_notes.files = files
         self.tick_checkbox.files = files
         self.logger.info('Updated files information for nextcloud notes api')
 

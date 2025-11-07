@@ -1,0 +1,63 @@
+
+import unittest
+import json
+
+from utils import MdWikiInstance
+
+class FastNotesApiTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        MdWikiInstance.start()
+        FastNotesApiTest.noteid = 0
+
+    @classmethod
+    def tearDownClass(cls):
+        MdWikiInstance.stop()
+
+    def test_1_creation_of_note(self):
+        # act
+        api = MdWikiInstance.call_api('POST', 'index.php/apps/notes/api/v1/notes', '''
+            {
+                "title": "Concurrent note",
+                "content": "No updates yet"
+            }''')
+
+        note = json.loads(api.read() or '{ }')
+
+        # assert
+        self.assertEqual(200, api.status)
+        self.assertTrue(0 < note['id'])
+
+        # assign
+        FastNotesApiTest.noteid = note['id']
+
+    def test_2_fast_updates_of_note(self):
+        # arrange
+        etags = []
+
+        for counter in range(1, 100):
+            # act
+            MdWikiInstance.call_api('PUT', f'index.php/apps/notes/api/v1/notes/{self.noteid}', '''
+                {
+                    "title": "Concurrent updates",
+                    "content": "Update no. %d"
+                }''' % counter)
+
+            api = MdWikiInstance.call_api('GET', f'index.php/apps/notes/api/v1/notes/{self.noteid}')
+            note = json.loads(api.read() or '{ }')
+
+            # assert
+            self.assertEqual(200, api.status)
+            self.assertEqual('Update no. %d' % counter, note['content'])
+            self.assertFalse(note['etag'] in etags)
+
+            # assign
+            etags.append(note['etag'])
+
+    def test_3_deletion_of_note(self):
+        # arrange
+        api = MdWikiInstance.call_api('DELETE', f'index.php/apps/notes/api/v1/notes/{self.noteid}')
+
+        # assert
+        self.assertEqual(200, api.status)

@@ -124,7 +124,7 @@ class UpdateNotes:
                 path.rename(newpath)
 
             file.name = title
-            file.content_string = content
+            file._content = content
             file.abs_src_path = str(newpath)
 
             note = get_note(file)
@@ -142,6 +142,7 @@ class UpdateNotes:
 
         elif request.method == 'DELETE':
             os.remove(file.abs_src_path)
+            self.files.remove(file)
 
             response.status = '200 OK'
             response.body = ''
@@ -149,10 +150,11 @@ class UpdateNotes:
         return True
 
 class CreateNotes:
-    def __init__(self, config):
+    def __init__(self, config, files=None):
         self.methods = ['POST']
         self.path = urlpath_matcher(config.site_url or '/', 'index.php/apps/notes/api/v1/notes')
         self.config = config
+        self.files = files
 
     def __call__(self, request, response):
         path = self.path.fullmatch(request.path)
@@ -182,6 +184,9 @@ class CreateNotes:
             path.write_text(content)
 
             file = File.generated(self.config, path.name, abs_src_path = str(path))
+            file._content = content
+            self.files.append(file)
+
             note = get_note(file)
 
             response.status = '200 OK'
@@ -237,6 +242,7 @@ class TickCheckbox:
             end   = file.content_string[match.end(1):]
 
             content = start + (' ' if untick else 'x') + end
+            file._content = content
 
             path = pathlib.Path(file.abs_src_path)
             path.write_text(content)
