@@ -1,5 +1,4 @@
 
-import hashlib
 import subprocess
 import urllib, re
 
@@ -17,15 +16,17 @@ class MdWikiInstance:
                 break
 
     @classmethod
-    def call_api(cls, method, path, data=''):
-        request = urllib.request.Request(f'{cls.baseurl}/{path}', data.encode('utf-8'), method=method)
+    def call_api(cls, method, path, data='', headers={}, defer=None):
+        request = urllib.request.Request(f'{cls.baseurl}/{path}', data.encode('utf-8'), method=method, headers=headers)
 
-        try:
-            response = urllib.request.urlopen(request)
-        except urllib.error.HTTPError as error:
-            response = error
+        def execute():
+            try:
+                response = urllib.request.urlopen(request)
+            except urllib.error.HTTPError as error:
+                response = error
+            return response
 
-        return response
+        return execute() if not defer else defer.run_in_executor(None, execute)
 
     @classmethod
     def stop(cls):

@@ -5,7 +5,7 @@ import json
 
 from mkdocs.structure.files import File
 
-from mdwiki.utils import get_note, get_file_id
+from mdwiki.utils import get_note, get_file_id, get_file_etag
 from mdwiki.http import safe_get, urlpath_matcher
 
 # for API specs see:
@@ -94,6 +94,7 @@ class UpdateNotes:
 
         file = None
         pathid = int(path.group(1))
+        etag = request.header('if-match', pattern='"[a-f0-9]{1,32}"', default=False)
 
         for page in self.files.documentation_pages():
             noteid = get_file_id(page)
@@ -106,15 +107,16 @@ class UpdateNotes:
             response.status = '404 Not Found'
             response.body = ''
 
+        elif etag and etag[+1:-1] != get_file_etag(file):
+            response.status = '412 Precondition Failed'
+            response.body = ''
+
         elif request.method == 'PUT':
-            length = request.header('content-length', pattern = '[0-9]+')
+            length = request.header('content-length', pattern='[0-9]+')
             note = json.loads(request.body.read(int(length)))
 
-            title = safe_get(note, 'title', pattern = '[a-zA-Z0-9 _-]*')
+            title = safe_get(note, 'title', pattern='[a-zA-Z0-9 _-]*') or 'Untitled'
             content = safe_get(note, 'content')
-
-            if title == '':
-                title = 'Untitled'
 
             path = pathlib.Path(file.abs_src_path)
             path.write_text(content)
@@ -161,16 +163,12 @@ class CreateNotes:
         if not path or request.method not in self.methods:
             return False
 
-        length = request.header('content-length', pattern = '[0-9]+')
+        length = request.header('content-length', pattern='[0-9]+')
         note = json.loads(request.body.read(int(length)))
 
-        title = safe_get(note, 'title', pattern = '[a-zA-Z0-9 _-]*')
+        title = safe_get(note, 'title', pattern='[a-zA-Z0-9 _-]*') or 'Untitled'
         content = safe_get(note, 'content')
-        category = safe_get(note, 'category', default = '')
-
-        # TODO use same source for fallback title
-        if title == '':
-            title = 'Untitled'
+        category = safe_get(note, 'category', default='')
 
         path = pathlib.Path(self.config.docs_dir)
         path = path.joinpath(title + '.md')

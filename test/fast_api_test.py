@@ -9,7 +9,7 @@ class FastNotesApiTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         MdWikiInstance.start()
-        FastNotesApiTest.noteid = 0
+        FastNotesApiTest.id = 0
 
     @classmethod
     def tearDownClass(cls):
@@ -19,7 +19,7 @@ class FastNotesApiTest(unittest.TestCase):
         # act
         api = MdWikiInstance.call_api('POST', 'index.php/apps/notes/api/v1/notes', '''
             {
-                "title": "Concurrent note",
+                "title": "Fast note",
                 "content": "No updates yet"
             }''')
 
@@ -30,7 +30,7 @@ class FastNotesApiTest(unittest.TestCase):
         self.assertTrue(0 < note['id'])
 
         # assign
-        FastNotesApiTest.noteid = note['id']
+        FastNotesApiTest.id = note['id']
 
     def test_2_fast_updates_of_note(self):
         # arrange
@@ -38,16 +38,17 @@ class FastNotesApiTest(unittest.TestCase):
 
         for counter in range(1, 100):
             # act
-            MdWikiInstance.call_api('PUT', f'index.php/apps/notes/api/v1/notes/{self.noteid}', '''
+            call = MdWikiInstance.call_api('PUT', f'index.php/apps/notes/api/v1/notes/{self.id}', '''
                 {
-                    "title": "Concurrent updates",
+                    "title": "Fast note",
                     "content": "Update no. %d"
                 }''' % counter)
 
-            api = MdWikiInstance.call_api('GET', f'index.php/apps/notes/api/v1/notes/{self.noteid}')
+            api = MdWikiInstance.call_api('GET', f'index.php/apps/notes/api/v1/notes/{self.id}')
             note = json.loads(api.read() or '{ }')
 
             # assert
+            self.assertEqual(200, call.status)
             self.assertEqual(200, api.status)
             self.assertEqual('Update no. %d' % counter, note['content'])
             self.assertFalse(note['etag'] in etags)
@@ -57,7 +58,7 @@ class FastNotesApiTest(unittest.TestCase):
 
     def test_3_deletion_of_note(self):
         # arrange
-        api = MdWikiInstance.call_api('DELETE', f'index.php/apps/notes/api/v1/notes/{self.noteid}')
+        api = MdWikiInstance.call_api('DELETE', f'index.php/apps/notes/api/v1/notes/{self.id}')
 
         # assert
         self.assertEqual(200, api.status)

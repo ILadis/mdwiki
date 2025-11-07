@@ -1,4 +1,5 @@
 
+import threading
 import logging, re
 import pathlib, urllib.parse
 
@@ -12,20 +13,22 @@ class HttpRouter:
 
     def attach_to(self, server):
         delegate = server.get_app()
+        lock = threading.Lock()
 
         def handler(environ, start_response):
-            request = HttpRequest(environ)
-            response = HttpResponse()
+            with lock:
+                request = HttpRequest(environ)
+                response = HttpResponse()
 
-            for handler in self.handlers :
-                if handler(request, response) is True:
-                    self.logger.info('Handled request: %s %s -> %s', request.method, request.path, response.status)
-                    self.logger.debug('Request params were: %s', request.params)
+                for handler in self.handlers :
+                    if handler(request, response) is True:
+                        self.logger.info('Handled request: %s %s -> %s', request.method, request.path, response.status)
+                        self.logger.debug('Request params were: %s', request.params)
 
-                    headers = list(response.headers.items())
-                    body = [response.body.encode('utf-8')]
-                    start_response(response.status, headers)
-                    return body
+                        headers = list(response.headers.items())
+                        body = [response.body.encode('utf-8')]
+                        start_response(response.status, headers)
+                        return body
 
             return delegate(environ, start_response)
 
