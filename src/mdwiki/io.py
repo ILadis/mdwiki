@@ -1,7 +1,7 @@
 
 import os
 import logging
-import pathlib, importlib
+import pathlib, importlib.resources
 
 def newfio(module, fn, mode=True):
     logger = logging.getLogger('mkdocs.plugins.newfio')
