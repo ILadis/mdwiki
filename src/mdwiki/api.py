@@ -95,6 +95,11 @@ class UpdateNotes:
         file = None
         pathid = int(path.group(1))
         etag = request.header('if-match', pattern='"[a-f0-9]{1,32}"', default=False)
+        agent = request.header('user-agent', default='')
+
+        # disable etags for quillpad (does not currently handle 4xx responses)
+        if 'okhttp' in agent:
+            etag = False
 
         for page in self.files.documentation_pages():
             noteid = get_file_id(page)
