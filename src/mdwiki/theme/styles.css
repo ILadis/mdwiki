@@ -11,33 +11,35 @@
 
 body {
   font-family: sans-serif;
+  line-height: 1.2;
   color: var(--color-dark-grey);
 }
 
 header {
   padding: 2rem 4rem 4rem;
-  max-width: 850px;
+  max-width: 1280px;
+  box-sizing: border-box;
 }
 
 main, article {
   padding: 0 4rem 4rem;
-  max-width: 850px;
+  max-width: 1280px;
+  box-sizing: border-box;
 }
 
 h1 {
-  margin: .25rem 0 1.5rem;
-  font-size: 1.5rem;
-  line-height: 1.25;
+  margin: 3rem 0 1rem;
+  font-size: 1.8rem;
 }
 
 h2 {
-  margin: .5rem 0 1.2rem;
-  font-size: 1.25rem;
-  line-height: 1.25;
+  margin: 3rem 0 1rem;
+  font-size: 1.5rem;
 }
 
-p {
-  text-align: justify;
+h3 {
+  margin: 3rem 0 1rem;
+  font-size: 1.2rem;
 }
 
 li {
@@ -73,7 +75,7 @@ tr:nth-child(2n) {
 th { font-weight: 600; }
 th, td {
   border: 1px solid #ddd;
-  padding: 0.4rem 0.8rem;
+  padding: .4rem .8rem;
 }
 
 pre {
@@ -159,12 +161,28 @@ main dt a {
   display: inline;
 }
 
-/* article styles */ 
+/* article styles */
 
 article h1 + time {
-  margin-top: -.8rem;
+  margin-top: -.4rem;
 }
 
-article > * + * {
+article > * + *:not(h1, h2, h3) {
   margin-top: 1.5rem;
 }
+
+article > h1 + *,
+article > h2 + *,
+article > h3 + *,
+article > * + ul,
+article > * + ol {
+  margin-top: 0;
+}
+
+article img {
+  max-width: 100%;
+  margin: 1rem;
+}
+
+article img[src$="#<"] { float: left;  }
+article img[src$="#>"] { float: right; }

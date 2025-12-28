@@ -47,8 +47,8 @@ def get_pip(version='25.1.1', hash='3a4f097c346f67adde38ceb430f4872d1e12d729'):
         urllib.request.urlretrieve(url, target)
 
     with target.open(mode='rb') as file:
-        h = hashlib.file_digest(file, 'sha1').hexdigest()
-        if h != hash:
+        digest = hashlib.file_digest(file, 'sha1').hexdigest()
+        if digest != hash:
             raise ImportError(name='pip')
 
     importer = zipimport.zipimporter(os.fspath(target))
