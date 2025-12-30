@@ -180,7 +180,7 @@ article > * + ol {
 }
 
 article img {
-  max-width: 100%;
+  max-width: min(560px, 100%);
   margin: 1rem;
 }
 
