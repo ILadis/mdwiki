@@ -179,6 +179,15 @@ article > * + ol {
   margin-top: 0;
 }
 
+article select {
+  font-size: 1rem;
+  font-weight: normal;
+  color: var(--color-dark-grey);
+  background: transparent;
+  appearance: none;
+  border: none;
+}
+
 article img {
   max-width: min(560px, 100%);
   margin: 1rem;
