@@ -27,7 +27,7 @@ class PublicAccess:
         if authz: return False
 
         accessible = False
-        resource = os.path.basename(path)
+        resource = os.path.basename(path) or 'index.html'
 
         page = page_by_path(self.files, path)
         refpage = page_by_path(self.files, referer)
