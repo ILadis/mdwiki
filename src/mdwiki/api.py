@@ -1,12 +1,55 @@
 
-import os, re
+import os, os.path, re
 import pathlib
 import json
 
 from mkdocs.structure.files import File
 
-from mdwiki.utils import get_note, get_file_id, get_file_etag
+from mdwiki.utils import get_post, get_note, get_file_id, get_file_etag, page_by_path
 from mdwiki.http import safe_get, urlpath_matcher
+
+class PublicAccess:
+    def __init__(self, config, files=None):
+        self.methods = ['HEAD', 'GET', 'PUT', 'POST', 'DELETE']
+        self.path = urlpath_matcher(config.site_url or '/', '.*')
+        self.whitelist = ['index.html', 'tags.html', 'script.js', 'styles.css', 'favicon.ico']
+        self.files = files
+
+    def __call__(self, request, response):
+        path = request.path
+        authz = request.header('authorization', pattern='(Basic|Bearer) .+', default=False)
+        referer = request.header('referer', default='/')
+
+        # for HTTP templates to render public versions of pages
+        request.params['public'] = False if authz else True
+
+        # if valid authz header is present all resources are accessible
+        if authz: return False
+
+        accessible = False
+        resource = os.path.basename(path)
+
+        page = page_by_path(self.files, path)
+        refpage = page_by_path(self.files, referer)
+
+        # check that referer page actually contains a link to resource
+        if not page and refpage and resource in refpage.content_string:
+            page = refpage
+
+        # if page/post is marked as public it is accessible
+        if page:
+            post = get_post(page)
+            accessible = post.get('public') is True
+        # if resource is whitelisted is is accessible
+        elif resource in self.whitelist:
+            accessible = True
+
+        if not accessible:
+            response.status = '403 Forbidden'
+            response.body = ''
+            return True
+
+        return False
 
 # for API specs see:
 # https://github.com/nextcloud/notes/blob/main/docs/api/v1.md
@@ -51,9 +94,9 @@ class ListNotes:
         if not path or request.method not in self.methods:
             return False
 
-        category = request.query('category', default = '')
-        exclude = request.query('exclude', default = '').split(',')
-        prune = request.query('pruneBefore', default = '-inf', pattern = '[0-9]+')
+        category = request.query('category', default='')
+        exclude = request.query('exclude', default='').split(',')
+        prune = request.query('pruneBefore', default='-inf', pattern='[0-9]+')
 
         notes = list()
 

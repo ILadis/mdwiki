@@ -23,6 +23,13 @@ def get_file_etag(file):
 
     return str(etag.hexdigest())
 
+def page_by_path(files, path):
+    if path.endswith('/'): path += 'index.html'
+
+    for page in files.documentation_pages():
+        if path.endswith(page.dest_path):
+            return page
+
 def get_note(file):
     fid = get_file_id(file)
     etag = get_file_etag(file)
@@ -49,6 +56,7 @@ def get_post(file):
     summary = data.get('summary', '')
     date = data.get('date')
     tags = data.get('tags')
+    public = data.get('public')
 
     if not isinstance(date, datetime.date):
         timestamp = int(os.path.getmtime(file.abs_src_path))
@@ -62,24 +70,31 @@ def get_post(file):
     post['summary'] = summary
     post['date'] = date
     post['tags'] = tags
+    post['public'] = public
     post['url'] = file.url
 
     return post
 
-def get_posts(files):
+def get_posts(files, tag=None, public=True):
     posts = list()
 
     for file in files.documentation_pages():
         post = get_post(file)
+
+        if public and not post['public']: continue
+        if tag and not tag in post['tags']: continue
+
         posts.append(post)
 
     return posts
 
-def get_tags(files):
+def get_tags(files, public=True):
     tags = set()
 
     for file in files.documentation_pages():
         post = get_post(file)
+
+        if public and not post['public']: continue
 
         for tag in post['tags']:
             tags.add(tag)
@@ -95,13 +110,13 @@ def setup_logging(stream, level, pattern):
     }
 
     # stips timestamps from live reload server logs
-    def formatMessage(self, record):
+    def format_message(self, record):
         if record.name == 'mkdocs.livereload':
             record.message = record.msg[11:]
         return self._style.format(record)
 
     formatter = logging.Formatter(pattern)
-    formatter.formatMessage = types.MethodType(formatMessage, formatter)
+    formatter.formatMessage = types.MethodType(format_message, formatter)
 
     logger = logging.getLogger('mkdocs')
     logger.setLevel(levels[level])
@@ -115,3 +130,7 @@ def setup_logging(stream, level, pattern):
 
     handler.setStream(stream)
     handler.setFormatter(formatter)
+
+def disable_livereload_jsinject(server):
+    noop_inject = lambda self, content, epoch: content
+    server._inject_js_into_html = types.MethodType(noop_inject, server)

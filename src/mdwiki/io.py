@@ -11,7 +11,13 @@ def newfio(module, fn, mode=True):
     oldfn = getattr(module, fn)
 
     def newio(callback):
+        guard = False
+
         def io(path, *args, **kwargs):
+            nonlocal guard
+            if guard:
+                return oldfn(path, *args, **kwargs)
+
             path = pathlib.Path(path)
             if not root in path.parents:
                 return oldfn(path, *args, **kwargs)
@@ -22,8 +28,12 @@ def newfio(module, fn, mode=True):
                 package = '.'.join(package.parts)
                 logger.debug('Called %s(..) from package: %s (path=%s)', oldfn.__name__, package, path)
 
-                file = importlib.resources.files(package)
-                return callback(file, *args, **kwargs)
+                try:
+                    guard = True
+                    file = importlib.resources.files(package)
+                    return callback(file, *args, **kwargs)
+                finally:
+                    guard = False
 
             name = package.name
             parent = package.parent
@@ -31,8 +41,12 @@ def newfio(module, fn, mode=True):
             package = '.'.join(parent.parts)
             logger.debug('Called %s(..) from package: %s (path=%s, file=%s)', oldfn.__name__, package, path, name)
 
-            file = importlib.resources.files(package).joinpath(name)
-            return callback(file, *args, **kwargs)
+            try:
+                guard = True
+                file = importlib.resources.files(package).joinpath(name)
+                return callback(file, *args, **kwargs)
+            finally:
+                guard = False
 
         setattr(module, fn, io)
         return io

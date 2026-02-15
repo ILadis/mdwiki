@@ -7,7 +7,8 @@ import mkdocs.config.config_options
 import mdwiki.http
 import mdwiki.api
 
-from mdwiki.utils import setup_logging, get_posts, get_post, get_tags
+from mdwiki.utils import setup_logging, disable_livereload_jsinject
+from mdwiki.utils import get_posts, get_post, get_tags
 
 # For developer guide in plugins see:
 # https://www.mkdocs.org/dev-guide/plugins/
@@ -32,6 +33,9 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         self.configured = True
 
         self.index = mdwiki.http.HttpTemplate(config, 'index.html')
+        self.tags = mdwiki.http.HttpTemplate(config, 'tags.html')
+
+        self.public_access = mdwiki.api.PublicAccess(config)
         self.list_notes = mdwiki.api.ListNotes(config)
         self.update_notes = mdwiki.api.UpdateNotes(config)
         self.create_notes = mdwiki.api.CreateNotes(config)
@@ -41,8 +45,16 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         self.router = mdwiki.http.HttpRouter()
         self.router.attach_to(server)
 
+        disable_livereload_jsinject(server)
+
+        # Should always run first (must be first handler in chain)
+        self.router.add_handler(self.public_access)
+
         self.router.add_handler(self.index)
         self.logger.info('Attached dynamic template "%s" to server', self.index.name)
+
+        self.router.add_handler(self.tags)
+        self.logger.info('Attached dynamic template "%s" to server', self.tags.name)
 
         self.router.add_handler(mdwiki.api.Capabilities(config))
         self.router.add_handler(self.list_notes)
@@ -52,6 +64,7 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         self.logger.info('Attached nextcloud notes api to server')
 
     def on_files(self, files, config):
+        self.public_access.files = files
         self.list_notes.files = files
         self.update_notes.files = files
         self.create_notes.files = files
@@ -59,21 +72,15 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         self.logger.info('Updated files information for nextcloud notes api')
 
     def on_env(self, env, config, files):
-        posts = get_posts(files)
-        tags = get_tags(files)
-
-        self.logger.debug('Got page tags: %s', str(tags))
-        self.logger.debug('Got page %d post(s)', len(posts))
-
-        env.globals['posts'] = posts
-        env.globals['tags'] = tags
-
+        env.globals['posts'] = lambda tag, public: get_posts(files, tag, public)
+        env.globals['tags'] = lambda public: get_tags(files, public)
         env.filters['to_post'] = lambda page: get_post(page.file)
-
         return env
 
     def on_pre_template(self, template, template_name, config):
         self.index.set_template(template_name, template)
+        self.tags.set_template(template_name, template)
 
     def on_template_context(self, context, template_name, config):
         self.index.set_context(template_name, context)
+        self.tags.set_context(template_name, context)

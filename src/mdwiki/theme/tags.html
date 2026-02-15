@@ -1,10 +1,14 @@
 {% extends "main.html" %}
 
+{% if request %}
+{% set public = request.params.get('public') %}
+{% endif %}
+
 {% block content %}
 <main>
   <h2>Tags</h2>
   <dl>
-    {%- set sorted = tags | sort %}
+    {%- set sorted = tags(public) | sort %}
     {%- for tag in sorted %}
     <dt><a href="{{ 'index.html' | url }}?tag={{ tag }}">{{ tag }}</a></dt>
     {% endfor %}
