@@ -1,5 +1,6 @@
 
 import os, os.path
+import signal
 import logging
 import datetime
 import hashlib
@@ -112,6 +113,7 @@ def setup_logging(stream, level, pattern):
     # stips timestamps from live reload server logs
     def format_message(self, record):
         if record.name == 'mkdocs.livereload':
+            record.name = 'mkdocs.server'
             record.message = record.msg[11:]
         return self._style.format(record)
 
@@ -134,3 +136,7 @@ def setup_logging(stream, level, pattern):
 def disable_livereload_jsinject(server):
     noop_inject = lambda self, content, epoch: content
     server._inject_js_into_html = types.MethodType(noop_inject, server)
+
+def enable_graceful_shutdown(server):
+    handler = lambda signum, frame: server.shutdown(wait=True)
+    signal.signal(signal.SIGTERM, handler)

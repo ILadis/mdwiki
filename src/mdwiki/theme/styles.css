@@ -208,7 +208,7 @@ article select {
 
 article img {
   max-width: min(560px, 100%);
-  margin: 1rem;
+  margin: 1rem 0;
 }
 
 article img[src$="#<"] { float: left;  }

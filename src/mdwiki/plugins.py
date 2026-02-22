@@ -7,7 +7,7 @@ import mkdocs.config.config_options
 import mdwiki.http
 import mdwiki.api
 
-from mdwiki.utils import setup_logging, disable_livereload_jsinject
+from mdwiki.utils import setup_logging, enable_graceful_shutdown, disable_livereload_jsinject
 from mdwiki.utils import get_posts, get_post, get_tags
 
 # For developer guide in plugins see:
@@ -45,6 +45,7 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         self.router = mdwiki.http.HttpRouter()
         self.router.attach_to(server)
 
+        enable_graceful_shutdown(server)
         disable_livereload_jsinject(server)
 
         # Should always run first (must be first handler in chain)
