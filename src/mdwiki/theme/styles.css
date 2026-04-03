@@ -1,11 +1,25 @@
 :root {
-  --color-dark-grey:    #22292f;
-  --color-light-grey:   #3d4852;
-  --color-lighter-grey: #8795a1;
+  --color-text-primary:   #22292f;
+  --color-text-secondary: #8795a1;
+  --color-text-link:      #3d4852;
 
-  --color-white:         #ffffff;
-  --color-darker-white:  #f1f5f8;
-  --color-darkest-white: #dddddd;
+  --color-background-primary:   #ffffff;
+  --color-background-secondary: #f1f5f8;
+
+  --color-border: #dddddd;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text-primary:   #e5e7eb;
+    --color-text-link:      #a1a1aa;
+    --color-text-secondary: #71717a;
+
+    --color-background-primary:   #0f172a;
+    --color-background-secondary: #1e293b;
+
+    --color-border: #94a3b8;
+  }
 }
 
 * {
@@ -16,7 +30,8 @@
 body {
   font-family: sans-serif;
   line-height: 1.2;
-  color: var(--color-dark-grey);
+  color: var(--color-text-primary);
+  background-color: var(--color-background-primary);
 }
 
 header {
@@ -64,7 +79,7 @@ blockquote::after  { content: '„'; }
 
 a {
   text-decoration: underline;
-  color: var(--color-light-grey);
+  color: var(--color-text-link);
 }
 
 table {
@@ -73,12 +88,12 @@ table {
 }
 
 tr:nth-child(2n) {
-  background-color: var(--color-darker-white);
+  background-color: var(--color-background-secondary);
 }
 
 th { font-weight: 600; }
 th, td {
-  border: 1px solid var(--color-darkest-white);
+  border: 1px solid var(--color-border);
   padding: .4rem .8rem;
 }
 
@@ -90,16 +105,16 @@ kbd {
   padding: 2px 4px;
   font-weight: bold;
   line-height: 1;
-  border: 1px solid var(--color-lighter-grey);
+  border: 1px solid var(--color-border);
   border-radius: 3px;
-  background-color: var(--color-darker-white);
+  background-color: var(--color-background-secondary);
   white-space: nowrap;
   display: inline-block;
 }
 
 code {
   padding: 0 .25rem;
-  background-color: var(--color-darker-white);
+  background-color: var(--color-background-secondary);
   white-space: pre;
   font-family: monospace;
   font-size: .875rem;
@@ -109,10 +124,17 @@ code {
 pre > code {
   padding: 1rem;
   border-radius: .25rem;
-  background-color: var(--color-dark-grey);
-  color: var(--color-white);
+  background-color: var(--color-text-primary);
+  color: var(--color-background-primary);
   overflow-y: auto;
   display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  pre > code {
+    background-color: var(--color-background-secondary);
+    color: var(--color-text-primary);
+  }
 }
 
 time {
@@ -120,7 +142,7 @@ time {
   text-transform: uppercase;
   font-size: .75rem;
   font-weight: 600;
-  color: var(--color-lighter-grey);
+  color: var(--color-text-secondary);
   display: block;
 }
 
@@ -130,11 +152,11 @@ header nav {
   display: flex;
 }
 
-header nav a:hover { color: var(--color-dark-grey); }
+header nav a:hover { color: var(--color-text-primary); }
 header nav a + a { margin-inline-start: 1.2rem;}
 header nav a {
   text-decoration: none;
-  color: var(--color-lighter-grey);
+  color: var(--color-text-secondary);
 }
 
 /* main styles */
@@ -155,7 +177,7 @@ main a {
   font-size: 1rem;
   font-weight: 500;
   text-decoration: none;
-  color: var(--color-light-grey);
+  color: var(--color-text-link);
 }
 
 main p {
@@ -200,7 +222,7 @@ article > * + ol {
 article select {
   font-size: 1rem;
   font-weight: normal;
-  color: var(--color-dark-grey);
+  color: var(--color-text-primary);
   background: transparent;
   appearance: none;
   border: none;
