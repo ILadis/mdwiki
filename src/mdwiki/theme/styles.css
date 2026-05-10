@@ -235,3 +235,34 @@ article img {
 
 article img[src$="#<"] { float: left;  }
 article img[src$="#>"] { float: right; }
+
+/* timeline styles */
+
+div.timeline + ol,
+div.timeline + ul {
+  padding: .8rem 0;
+  border-left: solid 2px var(--color-text-primary);
+}
+
+div.timeline + ol li,
+div.timeline + ul li {
+  margin: 0; padding: 0;
+  padding-left: 1.2rem;
+  list-style: none;
+}
+
+div.timeline + ol li + li,
+div.timeline + ul li + li {
+  margin-top: 1.4rem;
+}
+
+div.timeline + ol li::before,
+div.timeline + ul li::before {
+    content: '';
+    display: inline-block;
+    margin-left: calc(-.375rem - 1.2rem - 1px);
+    margin-right: calc(1.2rem - .375rem + 1px);
+    width: .75rem; height: .75rem;
+    border-radius: 50%;
+    background: var(--color-text-primary);
+}
