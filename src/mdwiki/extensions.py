@@ -1,5 +1,5 @@
 
-import re
+import re, subprocess
 
 import markdown.extensions
 import markdown.postprocessors
@@ -81,9 +81,52 @@ class ChecklistPostprocessor(markdown.postprocessors.Postprocessor):
         checked = ' checked' if state != ' ' else ''
         return '<li><input type="checkbox" disabled%s>' % checked
 
+class FencesPreprocessor(markdown.preprocessors.Preprocessor):
+    RE = re.compile(r'^```(?P<lang>[a-z]+)\s*\n(?P<content>.*?)```\s*$', re.MULTILINE | re.DOTALL)
+
+    def __init__(self, md, lang, commands):
+        super().__init__(md)
+        self.lang = lang
+        self.commands = commands
+
+    def run(self, lines):
+        index = 0
+        text = '\n'.join(lines)
+        while True:
+            match = self.RE.search(text, index)
+            if not match:
+                break
+
+            lang = match.group('lang')
+            content = match.group('content')
+
+            placeholder = ''
+            if lang == self.lang:
+                code = self.process(content) or ''
+                placeholder = self.md.htmlStash.store(code)
+
+            text = text[:match.start()] + '\n' + placeholder + '\n' + text[match.end():]
+            index = match.start() + len(placeholder) + 2
+
+        return text.split('\n')
+
+    def process(self, content):
+        try:
+            process = subprocess.Popen(self.commands,
+                stdin=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE)
+            process.stdin.write(content.encode('utf-8'))
+            output, error = process.communicate()
+
+            return output.decode('utf-8')
+        except:
+            return False
+
 class MdWikiExtension(markdown.extensions.Extension):
     def extendMarkdown(self, md):
         md.parser.blockprocessors.register(OListProcessor(md.parser), 'olist', 41)
         md.parser.blockprocessors.register(UListProcessor(md.parser), 'ulist', 31)
         md.parser.blockprocessors.register(IndentProcessor(md.parser), 'indent', 91)
+        md.preprocessors.register(FencesPreprocessor(md, 'graphviz', ['dot', '-Tsvg']), 'graphviz', 29)
         md.postprocessors.register(ChecklistPostprocessor(), 'checklist', 51)
