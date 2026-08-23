@@ -244,20 +244,20 @@ div.timeline + ul {
   border-left: solid 2px var(--color-text-primary);
 }
 
-div.timeline + ol li,
-div.timeline + ul li {
+div.timeline + ol > li,
+div.timeline + ul > li {
   margin: 0; padding: 0;
   padding-left: 1.2rem;
   list-style: none;
 }
 
-div.timeline + ol li + li,
-div.timeline + ul li + li {
+div.timeline + ol > li + li,
+div.timeline + ul > li + li {
   margin-top: 1.4rem;
 }
 
-div.timeline + ol li::before,
-div.timeline + ul li::before {
+div.timeline + ol > li::before,
+div.timeline + ul > li::before {
     content: '';
     display: inline-block;
     margin-left: calc(-.375rem - 1.2rem - 1px);
@@ -265,4 +265,16 @@ div.timeline + ul li::before {
     width: .75rem; height: .75rem;
     border-radius: 50%;
     background: var(--color-text-primary);
+}
+
+span.circled {
+  padding: 1px;
+  border: solid 1px var(--color-text-primary);
+  border-radius: 50%;
+  width: 1rem;
+  height: 1rem;
+  line-height: 1rem;
+  font-size: .7rem;
+  text-align: center;
+  display: inline-block;
 }
