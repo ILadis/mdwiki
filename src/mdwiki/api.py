@@ -1,11 +1,7 @@
 
-import os, os.path, re
-import pathlib
+import re, os.path
 import json
 
-from mkdocs.structure.files import File
-
-from mdwiki.utils import get_post, get_note, get_file_id, get_file_etag, page_by_path
 from mdwiki.http import safe_get, urlpath_matcher
 
 class PublicAccess:
@@ -29,18 +25,18 @@ class PublicAccess:
         accessible = False
         resource = os.path.basename(path) or 'index.html'
 
-        page = page_by_path(self.files, path)
-        refpage = page_by_path(self.files, referer)
+        file = self.files.file_by_path(path)
+        reffile = self.files.file_by_path(referer)
 
         # check that referer page actually contains a link to resource
-        if not page and refpage and resource in refpage.content_string:
-            page = refpage
+        if not file and reffile and resource in reffile.content_string:
+            file = reffile
 
         # if page/post is marked as public it is accessible
-        if page:
-            post = get_post(page)
+        if file:
+            post = self.files.post_by_file(file)
             accessible = post.get('public') is True
-        # if resource is whitelisted is is accessible
+        # if resource is whitelisted it is accessible
         elif resource in self.whitelist:
             accessible = True
 
@@ -100,14 +96,12 @@ class ListNotes:
 
         notes = list()
 
-        for page in self.files.documentation_pages():
-            note = get_note(page)
-
+        for note in self.files.all_notes():
             # default note category is an empty string
             if note['category'] == category:
                 notes.append(note)
 
-            # exclude (prune) all keys except id if note is to old
+            # exclude (prune) all keys except id if note is too old
             if note['modified'] < float(prune):
                 excludes = set(note.keys())
                 excludes.remove('id')
@@ -135,8 +129,7 @@ class UpdateNotes:
         if not path or request.method not in self.methods:
             return False
 
-        file = None
-        pathid = int(path.group(1))
+        uid = int(path.group(1))
         etag = request.header('if-match', pattern='"[a-f0-9]{1,32}"', default=False)
         agent = request.header('user-agent', default='')
 
@@ -144,55 +137,36 @@ class UpdateNotes:
         if 'okhttp' in agent:
             etag = False
 
-        for page in self.files.documentation_pages():
-            noteid = get_file_id(page)
+        note = self.files.note_by_uid(uid)
 
-            if noteid == pathid:
-                file = page
-                break
-
-        if not file:
+        if not note:
             response.status = '404 Not Found'
             response.body = ''
 
-        elif etag and etag[+1:-1] != get_file_etag(file):
+        elif etag and etag[+1:-1] != note.get('etag'):
             response.status = '412 Precondition Failed'
             response.body = ''
 
         elif request.method == 'PUT':
             length = request.header('content-length', pattern='[0-9]+')
-            note = json.loads(request.body.read(int(length)))
+            body = json.loads(request.body.read(int(length)))
 
-            title = safe_get(note, 'title', pattern='[a-zA-Z0-9 _-]*') or 'Untitled'
-            content = safe_get(note, 'content')
+            title = safe_get(body, 'title', pattern='[a-zA-Z0-9 _-]*') or 'Untitled'
+            content = safe_get(body, 'content')
 
-            path = pathlib.Path(file.abs_src_path)
-            path.write_text(content)
-
-            newpath = path.parent.joinpath(title + '.md')
-            if not newpath.is_file():
-                path.rename(newpath)
-
-            file.name = title
-            file._content = content
-            file.abs_src_path = str(newpath)
-
-            note = get_note(file)
+            note = self.files.update_note(uid, title=title, content=content)
 
             response.status = '200 OK'
             response.headers['Content-Type'] = 'application/json'
             response.body = json.dumps(note)
 
         elif request.method == 'GET':
-            note = get_note(file)
-
             response.status = '200 OK'
             response.headers['Content-Type'] = 'application/json'
             response.body = json.dumps(note)
 
         elif request.method == 'DELETE':
-            os.remove(file.abs_src_path)
-            self.files.remove(file)
+            self.files.delete_note(uid)
 
             response.status = '200 OK'
             response.body = ''
@@ -212,29 +186,19 @@ class CreateNotes:
             return False
 
         length = request.header('content-length', pattern='[0-9]+')
-        note = json.loads(request.body.read(int(length)))
+        body = json.loads(request.body.read(int(length)))
 
-        title = safe_get(note, 'title', pattern='[a-zA-Z0-9 _-]*') or 'Untitled'
-        content = safe_get(note, 'content')
-        category = safe_get(note, 'category', default='')
+        title = safe_get(body, 'title', pattern='[a-zA-Z0-9 _-]*') or 'Untitled'
+        content = safe_get(body, 'content')
+        category = safe_get(body, 'category', default='')
 
-        path = pathlib.Path(self.config.docs_dir)
-        path = path.joinpath(title + '.md')
+        note = self.files.create_note(title=title, content=content, category=category)
 
-        # do not overwrite already existing files
-        if path.is_file():
+        if not note:
             response.status = '400 Bad Request'
             response.body = ''
 
         else:
-            path.write_text(content)
-
-            file = File.generated(self.config, path.name, abs_src_path = str(path))
-            file._content = content
-            self.files.append(file)
-
-            note = get_note(file)
-
             response.status = '200 OK'
             response.headers['Content-Type'] = 'application/json'
             response.body = json.dumps(note)
@@ -253,29 +217,20 @@ class TickCheckbox:
         if not path or request.method not in self.methods:
             return False
 
-        file = None
-        match = None
-
-        pathid = int(path.group(1))
+        uid = int(path.group(1))
         boxnum = int(path.group(2))
         untick = bool(path.group(3))
 
-        for page in self.files.documentation_pages():
-            noteid = get_file_id(page)
+        note = self.files.note_by_uid(uid)
+        content = note.get('content') if note else ''
 
-            if noteid != pathid:
-                continue
+        match = None
+        while boxnum > 0:
+            offset = 0 if match is None else match.end(1)
+            match  = self.checkbox.search(content, offset)
+            boxnum = boxnum - 1 if match else 0
 
-            file = page
-            content = file.content_string
-
-            while boxnum > 0:
-                offset = 0 if match is None else match.end(1)
-                match  = self.checkbox.search(content, offset)
-                boxnum = boxnum - 1 if match else 0
-            break
-
-        if not file:
+        if not note:
             response.status = '404 Not Found'
             response.body = ''
 
@@ -284,14 +239,11 @@ class TickCheckbox:
             response.body = ''
 
         else:
-            start = file.content_string[:match.start(1)]
-            end   = file.content_string[match.end(1):]
+            start = content[:match.start(1)]
+            end   = content[match.end(1):]
 
             content = start + (' ' if untick else 'x') + end
-            file._content = content
-
-            path = pathlib.Path(file.abs_src_path)
-            path.write_text(content)
+            self.files.update_note(uid, content=content)
 
             response.status = '200 OK'
             response.body = ''

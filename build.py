@@ -4,7 +4,7 @@ import argparse
 import unittest
 import urllib.request
 import zipapp, zipimport
-import os, pathlib, hashlib
+import sys, os, pathlib, hashlib
 
 def main():
     parser = argparse.ArgumentParser()
@@ -33,6 +33,9 @@ def build(args):
 def test(args):
     loader = unittest.TestLoader()
     loader.sortTestMethodsUsing = lambda test, other: +1 if test > other else -1
+
+    prefix = get_pip_prefix('./vendor')
+    sys.path.insert(0, f"{prefix}")
 
     tests = loader.discover('./test', pattern='*_test.py')
 

@@ -13,14 +13,19 @@ def newfio(module, fn, mode=True):
     def newio(callback):
         guard = False
 
-        def io(path, *args, **kwargs):
+        def io(oldpath, *args, **kwargs):
             nonlocal guard
             if guard:
-                return oldfn(path, *args, **kwargs)
+                return oldfn(oldpath, *args, **kwargs)
+
+            # path may be passed as bytes like object, in this case the caller expects
+            # results back as bytes like objects (which is currently not implemented)
+            try: path = str(oldpath, 'utf-8')
+            except: path = oldpath
 
             path = pathlib.Path(path)
             if not root in path.parents:
-                return oldfn(path, *args, **kwargs)
+                return oldfn(oldpath, *args, **kwargs)
 
             package = path.relative_to(root)
 

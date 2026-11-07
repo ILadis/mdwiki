@@ -62,3 +62,6 @@ class FastNotesApiTest(unittest.TestCase):
 
         # assert
         self.assertEqual(200, api.status)
+
+if __name__ == '__main__':
+    unittest.main()

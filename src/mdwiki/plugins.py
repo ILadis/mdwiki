@@ -6,11 +6,11 @@ import mkdocs.config.config_options
 
 import mdwiki.http
 import mdwiki.api
+import mdwiki.files
 
 from mdwiki.utils import setup_logging, enable_graceful_shutdown, disable_livereload_jsinject
-from mdwiki.utils import get_posts, get_post, get_tags
 
-# For developer guide in plugins see:
+# for developer guide on plugins see:
 # https://www.mkdocs.org/dev-guide/plugins/
 
 class MdWikiPlugin(mkdocs.plugins.BasePlugin):
@@ -29,17 +29,20 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         if self.configured:
             return
 
-        # Only configure http handlers once ("on_config" event can be triggered multiple times)
+        # only configure http handlers once ("on_config" event can be triggered multiple times)
         self.configured = True
+
+        self.repo = mdwiki.files.Repository.open('files.db')
+        self.files = mdwiki.files.Manager(config, self.repo)
 
         self.index = mdwiki.http.HttpTemplate(config, 'index.html')
         self.tags = mdwiki.http.HttpTemplate(config, 'tags.html')
 
-        self.public_access = mdwiki.api.PublicAccess(config)
-        self.list_notes = mdwiki.api.ListNotes(config)
-        self.update_notes = mdwiki.api.UpdateNotes(config)
-        self.create_notes = mdwiki.api.CreateNotes(config)
-        self.tick_checkbox = mdwiki.api.TickCheckbox(config)
+        self.public_access = mdwiki.api.PublicAccess(config, self.files)
+        self.list_notes = mdwiki.api.ListNotes(config, self.files)
+        self.update_notes = mdwiki.api.UpdateNotes(config, self.files)
+        self.create_notes = mdwiki.api.CreateNotes(config, self.files)
+        self.tick_checkbox = mdwiki.api.TickCheckbox(config, self.files)
 
     def on_serve(self, server, config, builder):
         self.router = mdwiki.http.HttpRouter()
@@ -48,7 +51,7 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         enable_graceful_shutdown(server)
         disable_livereload_jsinject(server)
 
-        # Should always run first (must be first handler in chain)
+        # should always run first (must be first handler in chain)
         self.router.add_handler(self.public_access)
 
         self.router.add_handler(self.index)
@@ -65,17 +68,13 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         self.logger.info('Attached nextcloud notes api to server')
 
     def on_files(self, files, config):
-        self.public_access.files = files
-        self.list_notes.files = files
-        self.update_notes.files = files
-        self.create_notes.files = files
-        self.tick_checkbox.files = files
+        self.files.update_files(files)
         self.logger.info('Updated files information for nextcloud notes api')
 
     def on_env(self, env, config, files):
-        env.globals['posts'] = lambda tag, public: get_posts(files, tag, public)
-        env.globals['tags'] = lambda public: get_tags(files, public)
-        env.filters['to_post'] = lambda page: get_post(page.file)
+        env.globals['posts'] = lambda tag, public: self.files.all_posts(tag, public)
+        env.globals['tags'] = lambda public: self.files.all_tags(public)
+        env.filters['to_post'] = lambda page: self.files.post_by_file(page.file)
         return env
 
     def on_pre_template(self, template, template_name, config):
