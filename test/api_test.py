@@ -35,7 +35,7 @@ class NotesApiTest(unittest.TestCase):
         # assign
         NotesApiTest.id = note['id']
 
-    def test_2_update_of_note_content(self):
+    def test_2_update_of_note(self):
         # act
         api = MdWikiInstance.call_api('PUT', f'index.php/apps/notes/api/v1/notes/{self.id}', '''
             {

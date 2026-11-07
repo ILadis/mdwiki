@@ -230,8 +230,8 @@ class Repository:
 
         if ino is False: return None
 
-        # TODO when both path and ino are not unique upon insert an error is thrown
-        # (can happen when the same ino is reused by another file later)
+        # TODO when an entry for an inode with a different path already exists an error is thrown
+        # (this can happen when the same inode is reused by another file later and that entry was not removed)
         parameters = (str(path), int(uid), int(ino), str(etag))
         statement = '''
             INSERT INTO "files" ("path", "uid", "ino", "etag")
