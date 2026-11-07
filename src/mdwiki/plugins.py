@@ -32,7 +32,7 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
         # only configure http handlers once ("on_config" event can be triggered multiple times)
         self.configured = True
 
-        self.repo = mdwiki.files.Repository.open('files.db')
+        self.repo = mdwiki.files.Repository.open(self.config['files_db'])
         self.files = mdwiki.files.Manager(config, self.repo)
 
         self.index = mdwiki.http.HttpTemplate(config, 'index.html')
