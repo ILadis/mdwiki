@@ -222,6 +222,7 @@ class TickCheckbox:
         untick = bool(path.group(3))
 
         note = self.files.note_by_uid(uid)
+        title = note.get('title') if note else ''
         content = note.get('content') if note else ''
 
         match = None
@@ -243,7 +244,7 @@ class TickCheckbox:
             end   = content[match.end(1):]
 
             content = start + (' ' if untick else 'x') + end
-            self.files.update_note(uid, content=content)
+            self.files.update_note(uid, title=title, content=content)
 
             response.status = '200 OK'
             response.body = ''

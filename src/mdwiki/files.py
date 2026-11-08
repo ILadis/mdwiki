@@ -34,6 +34,7 @@ class Manager:
         source = get_file_contents(path)
         _, data = meta.get_data(source or '')
 
+        title = data.get('title', file.name)
         summary = data.get('summary', '')
         date = data.get('date')
         tags = data.get('tags')
@@ -47,7 +48,7 @@ class Manager:
 
         post = dict()
         post['id'] = uid
-        post['title'] = file.name
+        post['title'] = title
         post['summary'] = summary
         post['date'] = date
         post['tags'] = tags

@@ -26,8 +26,7 @@ class MdWikiPlugin(mkdocs.plugins.BasePlugin):
     def on_config(self, config):
         setup_logging(sys.stdout, self.config['log_level'], self.config['log_format'])
 
-        if self.configured:
-            return
+        if self.configured: return
 
         # only configure http handlers once ("on_config" event can be triggered multiple times)
         self.configured = True
