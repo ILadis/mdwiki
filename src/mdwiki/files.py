@@ -222,8 +222,8 @@ class Repository:
 
     def update_file(self, file):
         uid = random.randint(
-            100_000_000_000_000_000,
-            999_999_999_999_999_999)
+            100_000_000_000_000,
+            999_999_999_999_999)
 
         ino  = get_file_ino(file)
         path = get_file_path(file)
