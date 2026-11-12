@@ -1,4 +1,6 @@
 :root {
+  --page-spacing: 1rem;
+
   --color-text-primary:   #22292f;
   --color-text-secondary: #8795a1;
   --color-text-link:      #3d4852;
@@ -22,6 +24,12 @@
   }
 }
 
+@media (min-width: 680px) {
+  :root {
+    --page-spacing: 4rem;
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -35,13 +43,13 @@ body {
 }
 
 header {
-  padding: 2rem 4rem 4rem;
+  padding: 2rem var(--page-spacing) 4rem;
   max-width: 1280px;
   box-sizing: border-box;
 }
 
 main, article {
-  padding: 0 4rem 4rem;
+  padding: 0 var(--page-spacing) 4rem;
   max-width: 1280px;
   box-sizing: border-box;
 }
