@@ -70,12 +70,12 @@ em {
 }
 
 blockquote {
-  margin-left: 2rem;
   font-style: italic;
+  text-align: justify;
+  padding: .3rem 2rem .3rem 1rem;
+  border-left: solid 2px var(--color-border);
+  background-color: var(--color-background-secondary);
 }
-
-blockquote::before { content: '“'; }
-blockquote::after  { content: '„'; }
 
 a {
   text-decoration: underline;
@@ -207,6 +207,10 @@ article h1 + time {
 
 article > * + *:not(h1, h2, h3) {
   margin-top: 1.5rem;
+}
+
+article > blockquote > * + * {
+  margin-top: 1rem;
 }
 
 main > *:first-child,
